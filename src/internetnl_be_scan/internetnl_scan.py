@@ -16,7 +16,7 @@ from internetnl_be_scan import __version__
 from requests.auth import HTTPBasicAuth
 from tqdm import trange
 
-logging.basicConfig(format='%(asctime)s %(name)-12s - %(levelname)-8s : %(message)s')
+logging.basicConfig(format='%(asctime)s l%(lineno)-4s - %(levelname)-8s : %(message)s')
 _logger = logging.getLogger()
 
 
