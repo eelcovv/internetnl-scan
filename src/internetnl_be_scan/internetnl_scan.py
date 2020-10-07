@@ -121,6 +121,7 @@ class InternetNlScanner(object):
             name=self.scan_name,
             domains=self.urls_to_scan,
         )
+        _logger.info(f"Start request to scan {len(self.urls_to_scan)} URLS")
         response = requests.post(f'{self.api_url}/requests',
                                  json=post_parameters,
                                  auth=self.scan_credentials.http_auth)
