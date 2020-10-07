@@ -279,7 +279,7 @@ def main(argv):
     if args.domain_file is not None:
         _logger.info(f"Reading urls from {args.domain_file}")
         urls = pd.read_csv(args.domain_file)
-        urls_to_scan.extend(urls)
+        urls_to_scan.extend(urls["url"].tolist())
 
     if args.url is not None:
         for urls in args.url:
