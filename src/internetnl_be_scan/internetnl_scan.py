@@ -1,19 +1,20 @@
-import sys
+import argparse
+import getpass
+import glob
+import logging
 import os
-import time
 import pickle
 import sqlite3
-import argparse
-import logging
-import glob
-import getpass
+import sys
+import time
 from pathlib import Path
-from tqdm import trange
-import pandas as pd
+
 import keyring
+import pandas as pd
 import requests
-from requests.auth import HTTPBasicAuth
 from internetnl_be_scan import __version__
+from requests.auth import HTTPBasicAuth
+from tqdm import trange
 
 logging.basicConfig(format='%(asctime)s %(name)-12s - %(levelname)-8s : %(message)s')
 _logger = logging.getLogger()
@@ -290,5 +291,9 @@ def main(argv):
                                  )
 
 
-if __name__ == "__main__":
+def run():
     main(sys.argv[1:])
+
+
+if __name__ == "__main__":
+    run()
