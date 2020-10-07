@@ -121,7 +121,8 @@ class InternetNlScanner(object):
             name=self.scan_name,
             domains=self.urls_to_scan,
         )
-        _logger.info(f"Start request to scan {len(self.urls_to_scan)} URLS")
+        n_urls = len(self.urls_to_scan)
+        _logger.info(f"Start request to scan {n_urls} URLS")
         response = requests.post(f'{self.api_url}/requests',
                                  json=post_parameters,
                                  auth=self.scan_credentials.http_auth)
@@ -139,8 +140,6 @@ class InternetNlScanner(object):
         request_info = api_response["request"]
 
         self.scan_id = request_info['request_id']
-
-        self.cache_file = f""
 
         _logger.info(f"Started scan with ID {self.scan_id}")
 
