@@ -47,6 +47,14 @@ class Credentials(object):
         keyring.delete_password(service_name=self.service_name, username=self.username)
 
 
+def response_to_dataframe(response):
+    result = response.json()
+    all_scans = result["requests"]
+    all_scans = [pd.DataFrame.from_dict(scan, orient='index').T for scan in all_scans]
+    scans_df = pd.concat(all_scans).reset_index().drop("index", axis=1)
+    return scans_df
+
+
 def flatten_dict(current_key, current_value, new_dict):
     """ gegeven de current key en value van een dict, zet de value als een string, of als een
     dict maak een nieuwe key gebaseerd of the huidige key en dict key """
@@ -56,14 +64,6 @@ def flatten_dict(current_key, current_value, new_dict):
             flatten_dict(new_key, value, new_dict)
     else:
         new_dict[current_key] = current_value
-
-
-def response_to_dataframe(response):
-    result = response.json()
-    all_scans = result["requests"]
-    all_scans = [pd.DataFrame.from_dict(scan, orient='index').T for scan in all_scans]
-    scans_df = pd.concat(all_scans).reset_index().drop("index", axis=1)
-    return scans_df
 
 
 def scan_result_to_dataframe(domains):

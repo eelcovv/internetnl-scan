@@ -18,6 +18,9 @@ _logger = logging.getLogger(LOGGER_BASE_NAME)
 
 
 class InternetNlScanner(object):
+    """
+    Python interfaces for Internet.nl API
+    """
 
     def __init__(self,
                  urls_to_scan: list,
