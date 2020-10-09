@@ -48,6 +48,16 @@ class Credentials(object):
 
 
 def response_to_dataframe(response):
+    """
+    Convevrt the Internet.nl response to pandas dataframe
+
+    Args:
+        response: the returned response ot the Internet.nl API
+
+    Returns:
+        Pandas dataframe
+
+    """
     result = response.json()
     all_scans = result["requests"]
     all_scans = [pd.DataFrame.from_dict(scan, orient='index').T for scan in all_scans]
@@ -55,13 +65,13 @@ def response_to_dataframe(response):
     return scans_df
 
 
-def flatten_dict(current_key, current_value, new_dict):
+def _flatten_dict(current_key, current_value, new_dict):
     """ gegeven de current key en value van een dict, zet de value als een string, of als een
     dict maak een nieuwe key gebaseerd of the huidige key en dict key """
     if isinstance(current_value, dict):
         for key, value in current_value.items():
             new_key = "_".join([current_key, key])
-            flatten_dict(new_key, value, new_dict)
+            _flatten_dict(new_key, value, new_dict)
     else:
         new_dict[current_key] = current_value
 
@@ -86,7 +96,7 @@ def scan_result_to_dataframe(domains):
             if isinstance(table_prop, dict):
                 new_dict = dict()
                 for prop_key, prop_val in table_prop.items():
-                    flatten_dict(prop_key, prop_val, new_dict)
+                    _flatten_dict(prop_key, prop_val, new_dict)
                 tables[table_key][domain] = new_dict
             else:
                 tables[table_key][domain] = table_prop
