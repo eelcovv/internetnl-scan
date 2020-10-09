@@ -2,8 +2,10 @@ import getpass
 import logging
 import sys
 from pathlib import Path
+from tqdm import tqdm
 
 import keyring
+import pandas as pd
 from ict_analyser import LOGGER_BASE_NAME
 from requests.auth import HTTPBasicAuth
 
@@ -54,6 +56,47 @@ def flatten_dict(current_key, current_value, new_dict):
             flatten_dict(new_key, value, new_dict)
     else:
         new_dict[current_key] = current_value
+
+
+def response_to_dataframe(response):
+    result = response.json()
+    all_scans = result["requests"]
+    all_scans = [pd.DataFrame.from_dict(scan, orient='index').T for scan in all_scans]
+    scans_df = pd.concat(all_scans).reset_index().drop("index", axis=1)
+    return scans_df
+
+
+def domains_to_tables(domains):
+    """
+    Convert a dict internet.nl scans to a flat dictionary with on entry per result type
+
+    Args:
+        domains: dict
+            keys are the urls, values are the nested json results
+
+    Returns:
+        pd.DataFrame
+    """
+    tables = dict()
+    _logger.info("Converting the results to a dataframe")
+    for domain, properties in tqdm(domains.items()):
+        for table_key, table_prop in properties.items():
+            if table_key not in tables.keys():
+                tables[table_key] = dict()
+            if isinstance(table_prop, dict):
+                new_dict = dict()
+                for prop_key, prop_val in table_prop.items():
+                    flatten_dict(prop_key, prop_val, new_dict)
+                tables[table_key][domain] = new_dict
+            else:
+                tables[table_key][domain] = table_prop
+    # convert the dictionaries to a pandas data frames
+    for table_key, table_prop in tables.items():
+        tables[table_key] = pd.DataFrame.from_dict(table_prop, orient='index')
+
+    dataframe = pd.concat(tables)
+
+    return dataframe
 
 
 def make_cache_file_name(directory, scan_id):

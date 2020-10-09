@@ -11,7 +11,8 @@ from ict_analyser import LOGGER_BASE_NAME
 from tabulate import tabulate
 from tqdm import trange
 
-from internetnl_be_scan.utils import (query_yes_no, Credentials, make_cache_file_name)
+from internetnl_be_scan.utils import (query_yes_no, Credentials, make_cache_file_name,
+                                      response_to_dataframe, domains_to_tables)
 
 _logger = logging.getLogger(LOGGER_BASE_NAME)
 
@@ -80,15 +81,12 @@ class InternetNlScanner(object):
                 self.get_results()
             if delete_scan:
                 self.delete_scan()
+        elif self.urls_to_scan:
+            self.start_url_scan()
 
-        if self.urls_to_scan:
-            if self.urls_to_scan:
-                self.start_url_scan()
-
-        if self.scan_id is not None:
+        if self.scan_id is not None and wait_until_done:
             # scan id is either given on command line or get by the start_url _scn
-            if wait_until_done:
-                self.wait_until_done()
+            self.wait_until_done()
 
         if list_all_scans:
             self.list_all_scans()
@@ -100,6 +98,9 @@ class InternetNlScanner(object):
             self.export_results()
 
     def start_url_scan(self):
+        """
+        post a request to internet.nl to scan a list of urls
+        """
 
         # set: api_url, username, password
         post_parameters = dict(
@@ -143,7 +144,8 @@ class InternetNlScanner(object):
         else:
 
             api_response = response.json()
-            _logger.debug(api_response)
+            status = pd.DataFrame.from_dict(api_response["request"], orient="index").T
+            _logger.info("\n{}".format(tabulate(status, headers="keys", tablefmt="psql")))
             request_info = api_response["request"]
             finished_date = request_info["finished_date"]
 
@@ -188,10 +190,7 @@ class InternetNlScanner(object):
         response = requests.get(f"{self.api_url}/requests", auth=self.scan_credentials.http_auth)
         response.raise_for_status()
 
-        result = response.json()
-        all_scans = result["requests"]
-        all_scans = [pd.DataFrame.from_dict(scan, orient='index').T for scan in all_scans]
-        self.scans_df = pd.concat(all_scans).reset_index().drop("index", axis=1)
+        self.scans_df = response_to_dataframe(response)
 
     def delete_all_scans(self):
         """
@@ -259,24 +258,13 @@ class InternetNlScanner(object):
             self.domains[url] = scan_result
 
     def export_results(self):
+        """
+        Export the scanned result to a sqlite database
+        """
+
+        results = domains_to_tables(self.domains)
 
         _logger.info(f"Writing to {self.output_filename}")
-
-        # per table maken we een platte dict
-        tables = dict()
-        for domain, properties in self.domains.items():
-            for table_key, table_prop in properties.items():
-                if table_key not in tables.keys():
-                    tables[table_key] = dict()
-                if isinstance(table_prop, dict):
-                    new_dict = dict()
-                    for prop_key, prop_val in table_prop.items():
-                        flatten_dict(prop_key, prop_val, new_dict)
-                    tables[table_key][domain] = new_dict
-                else:
-                    tables[table_key][domain] = table_prop
-
         connection = sqlite3.connect(self.output_filename)
-        for table_key, table_prop in tables.items():
-            dataframe = pd.DataFrame.from_dict(table_prop, orient='index')
+        for table_key, dataframe in results.groupby(level=0):
             dataframe.to_sql(table_key, con=connection, if_exists="replace")
