@@ -47,7 +47,7 @@ class InternetNlScanner(object):
         else:
             self.tracking_information = tracking_information
         if scan_name is None:
-            self.scan_name = "CBS scan"
+            self.scan_name = "Scan {}".format(pd.Timestamp.now().strftime("%Y%m%d%H%M%S"))
         else:
             self.scan_name = scan_name
         self.scan_type = scan_type
