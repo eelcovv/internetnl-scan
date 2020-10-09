@@ -7,14 +7,18 @@ import pickle
 import sqlite3
 import sys
 import time
+import qprompt
+from tabulate import tabulate
 from pathlib import Path
+from cbs_utils.misc import query_yes_no
 
 import keyring
 import pandas as pd
 import requests
-from internetnl_be_scan import __version__
 from requests.auth import HTTPBasicAuth
 from tqdm import trange
+
+from internetnl_be_scan import __version__
 
 logging.basicConfig(format='%(asctime)s l%(lineno)-4s - %(levelname)-8s : %(message)s')
 _logger = logging.getLogger()
@@ -66,17 +70,26 @@ class InternetNlScanner(object):
     def __init__(self,
                  urls_to_scan: list,
                  tracking_information: str = None,
+                 scan_id: str = None,
                  scan_name: str = None,
                  scan_type: str = "web",
                  api_url: str = "https://batch.internet.nl/api/batch/v2/",
                  interval: int = 30,
                  cache_directory: str = "cache",
                  ignore_cache: bool = True,
-                 output_filename: str = None
+                 output_filename: str = None,
+                 wait_until_done: bool = False,
+                 get_results: bool = False,
+                 delete_scan: bool = False,
+                 list_all_scans: bool = False,
+                 delete_all_scans: bool = False,
+                 export_results: bool = False,
+                 force_delete: bool = False
                  ):
 
         self.api_url = api_url
         self.output_filename = output_filename
+        self.scan_id = scan_id
         if tracking_information is None:
             self.tracking_information = "{time}".format(time=time.time())
         else:
@@ -88,9 +101,12 @@ class InternetNlScanner(object):
         self.scan_type = scan_type
         self.urls_to_scan = urls_to_scan
 
+        self.force_delete = force_delete
+
         self.interval = interval
 
-        self.scan_id = None
+        self.scans_df: pd.DataFrame = None
+
         self.domains = dict()
         self.response = None
         self.finished_scan = False
@@ -104,13 +120,33 @@ class InternetNlScanner(object):
 
         self.urls_to_scan = list(set(urls_to_scan).difference(set(self.domains.keys())))
 
-        if self.urls_to_scan:
-            self.scan_credentials = Credentials()
-            self.start_url_scan()
-            self.wait_until_done()
-            self.get_results()
+        self.scan_credentials = Credentials()
 
-        self.export_results()
+        if self.scan_id is not None:
+            # only executed when a scan id is given on the command line
+            self.check_status()
+            if get_results:
+                self.get_results()
+            if delete_scan:
+                self.delete_scan()
+
+        if self.urls_to_scan:
+            if self.urls_to_scan:
+                self.start_url_scan()
+
+        if self.scan_id is not None:
+            # scan id is either given on command line or get by the start_url _scn
+            if wait_until_done:
+                self.wait_until_done()
+
+        if list_all_scans:
+            self.list_all_scans()
+
+        if delete_all_scans:
+            self.delete_all_scans()
+
+        if export_results:
+            self.export_results()
 
     def start_url_scan(self):
 
@@ -156,6 +192,7 @@ class InternetNlScanner(object):
         else:
 
             api_response = response.json()
+            _logger.debug(api_response)
             request_info = api_response["request"]
             finished_date = request_info["finished_date"]
 
@@ -187,6 +224,57 @@ class InternetNlScanner(object):
                     domains = pickle.load(stream)
                 for url, scan_result in domains.items():
                     self.domains[url] = scan_result
+
+            if self.domains:
+                _logger.info(f"Retrieved scan results from cache for {len(self.domains)} domains")
+            else:
+                _logger.debug("No domains retrieved from cache")
+
+    def get_all_scans(self):
+        """
+        Get a list of all scans
+        """
+        response = requests.get(f"{self.api_url}/requests", auth=self.scan_credentials.http_auth)
+        response.raise_for_status()
+
+        result = response.json()
+        all_scans = result["requests"]
+        all_scans = [pd.DataFrame.from_dict(scan, orient='index').T for scan in all_scans]
+        self.scans_df = pd.concat(all_scans).reset_index().drop("index", axis=1)
+
+    def delete_all_scans(self):
+        """
+        Delete all available scanes
+        """
+
+        self.list_all_scans()
+        _logger.warning("You are about to delete the results of all these scans.")
+        delete_all = True
+        if not self.force_delete:
+            delete_all = qprompt.ask_yesno()
+        if delete_all:
+            _logger.info("Deleting")
+            for scan_id in self.scans_df["request_id"]:
+                _logger.info(f"Deleting {scan_id}")
+        else:
+            _logger.info("Delete all canceled")
+
+    def list_all_scans(self):
+        """
+        Give a list of all scans
+        """
+
+        self.get_all_scans()
+        _logger.info("\n{}".format(tabulate(self.scans_df, headers='keys', tablefmt='psql')))
+
+    def delete_scan(self):
+        """
+        Delete the scan with the id 'scan_id'
+        """
+
+        response = requests.get(f"{self.api_url}/requests/{self.scan_id}/cancel",
+                                auth=self.scan_credentials.http_auth)
+        response.raise_for_status()
 
     def get_results(self):
 
@@ -263,6 +351,15 @@ def parse_args(args):
     parser.add_argument("--output_filename", action="store", help="Output file",
                         default="internet_nl.sqlite")
     parser.add_argument("--ignore_cache", action="store_true", help="Do not read cache")
+    parser.add_argument("--scan_id", action="store", help="Give a id of an existing scan")
+    parser.add_argument("--list_all_scans", action="store_true", help="Give a list of all scans")
+    parser.add_argument("--delete_scan", action="store_true", help="Delete the scan *scan_id*")
+    parser.add_argument("--delete_all_scans", action="store_true", help="Delete all the scans")
+    parser.add_argument("--force_delete", action="store_true", help="Force the delete action "
+                                                                    "without confirm")
+    parser.add_argument("--get_results", action="store_true", help="Get results of *scan_id*")
+    parser.add_argument("--export_to_sqlite", action="store_true", help="Export the results to "
+                                                                        "a flat sqlite table")
 
     parsed_arguments = parser.parse_args(args)
 
@@ -285,10 +382,16 @@ def main(argv):
         for urls in args.url:
             urls_to_scan.append(urls[0])
 
-    internet = InternetNlScanner(urls_to_scan=urls_to_scan,
-                                 ignore_cache=args.ignore_cache,
-                                 output_filename=args.output_filename
-                                 )
+    InternetNlScanner(urls_to_scan=urls_to_scan,
+                      ignore_cache=args.ignore_cache,
+                      output_filename=args.output_filename,
+                      scan_id=args.scan_id,
+                      get_results=args.get_results,
+                      list_all_scans=args.list_all_scans,
+                      delete_scan=args.delete_scan,
+                      delete_all_scans=args.delete_all_scans,
+                      export_results=args.export_to_sqlite,
+                      )
 
 
 def run():
