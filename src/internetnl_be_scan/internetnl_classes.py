@@ -33,7 +33,7 @@ class InternetNlScanner(object):
                  get_results: bool = False,
                  delete_scan: bool = False,
                  list_all_scans: bool = False,
-                 delete_all_scans: bool = False,
+                 clear_all_scans: bool = False,
                  export_results: bool = False,
                  force_delete: bool = False
                  ):
@@ -93,7 +93,7 @@ class InternetNlScanner(object):
         if list_all_scans:
             self.list_all_scans()
 
-        if delete_all_scans:
+        if clear_all_scans:
             self.delete_all_scans()
 
         if export_results:
@@ -227,10 +227,10 @@ class InternetNlScanner(object):
         mask = self.scans_df["request_id"] == self.scan_id
         if any(mask):
             scan = self.scans_df[mask]
-            _logger.info(scan)
+            _logger.info("\n{}".format(tabulate(scan, headers='keys', tablefmt='psql')))
             delete = True
             if not self.force_delete:
-                delete = query_yes_no("Continue deleting all scans ?") == "yes"
+                delete = query_yes_no("Continue deleting this scan ?") == "yes"
 
             if delete:
                 response = requests.get(f"{self.api_url}/requests/{self.scan_id}/cancel",

@@ -2,7 +2,6 @@ import argparse
 import logging
 import os
 import sys
-from pathlib import Path
 
 import pandas as pd
 
@@ -39,7 +38,7 @@ def parse_args(args):
     parser.add_argument("--scan_id", action="store", help="Give a id of an existing scan")
     parser.add_argument("--list_all_scans", action="store_true", help="Give a list of all scans")
     parser.add_argument("--delete_scan", action="store_true", help="Delete the scan *scan_id*")
-    parser.add_argument("--delete_all_scans", action="store_true", help="Delete all the scans")
+    parser.add_argument("--clear_all_scans", action="store_true", help="Delete all the scans")
     parser.add_argument("--force_delete", action="store_true", help="Force the delete action "
                                                                     "without confirm")
     parser.add_argument("--get_results", action="store_true", help="Get results of *scan_id*")
@@ -74,7 +73,7 @@ def main(argv):
                       get_results=args.get_results,
                       list_all_scans=args.list_all_scans,
                       delete_scan=args.delete_scan,
-                      delete_all_scans=args.delete_all_scans,
+                      clear_all_scans=args.clear_all_scans,
                       export_results=args.export_to_sqlite,
                       )
 
