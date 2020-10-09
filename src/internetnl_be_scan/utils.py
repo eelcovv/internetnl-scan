@@ -66,7 +66,7 @@ def response_to_dataframe(response):
     return scans_df
 
 
-def domains_to_tables(domains):
+def scan_result_to_dataframe(domains):
     """
     Convert a dict internet.nl scans to a flat dictionary with on entry per result type
 
