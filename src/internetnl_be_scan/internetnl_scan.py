@@ -21,7 +21,7 @@ def parse_args(args):
     Returns:
       :obj:`argparse.Namespace`: command line parameters namespace
     """
-    parser = argparse.ArgumentParser(description="Small example of api scan")
+    parser = argparse.ArgumentParser(description="Command line interface for Internet.nl API")
     parser.add_argument("--version", action="version",
                         version="{file} version: {ver}".format(file=os.path.basename(__file__),
                                                                ver=__version__))
