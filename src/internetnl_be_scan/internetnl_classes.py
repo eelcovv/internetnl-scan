@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 import requests
-from ict_analyser import LOGGER_BASE_NAME
+from internetnl_be_scan import LOGGER_BASE_NAME
 from tabulate import tabulate
 from tqdm import trange
 
