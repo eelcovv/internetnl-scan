@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 import requests
-from ict_analyser import LOGGER_BASE_NAME
+from internetnl_be_scan import LOGGER_BASE_NAME
 from tabulate import tabulate
 from tqdm import trange
 
@@ -91,8 +91,19 @@ class InternetNlScanner(object):
             # scan id is either given on command line or get by the start_url _scn
             self.wait_until_done()
 
-        if list_all_scans:
+        if list_all_scans or self.scan_id is None:
+            # als scan_id hier nog None is  dan hebben we nog niks gedaan. Geef een lijst
             self.list_all_scans()
+            if self.scan_id is None:
+                if self.scans_df is not None:
+                    _logger.info("\n\nThis list of scans is available. In order to do something "
+                                 "with a specific scan, run:\n\n"
+                                 " >>> internetnl_scan --scan_id <request_id> [-option]\n\n"
+                                 "To see the available options run:\n\n"
+                                 " >>> internetnl_scan --help")
+                else:
+                    _logger.info("\n\nNo previous scans are available. To launch your first scan "
+                                 "do:\n\n >>> internetnl_scan --domain www.example.com")
 
         if clear_all_scans:
             self.delete_all_scans()

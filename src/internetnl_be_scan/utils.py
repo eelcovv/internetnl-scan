@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 import keyring
 import pandas as pd
-from ict_analyser import LOGGER_BASE_NAME
+from internetnl_be_scan import LOGGER_BASE_NAME
 from requests.auth import HTTPBasicAuth
 
 _logger = logging.getLogger(LOGGER_BASE_NAME)
