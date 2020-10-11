@@ -76,7 +76,7 @@ def _flatten_dict(current_key, current_value, new_dict):
         new_dict[current_key] = current_value
 
 
-def scan_result_to_dataframe(domains):
+def scan_result_to_dataframes(domains):
     """
     Convert a dict internet.nl scans to a flat dictionary with on entry per result type
 
@@ -85,7 +85,7 @@ def scan_result_to_dataframe(domains):
             keys are the urls, values are the nested json results
 
     Returns:
-        pd.DataFrame
+        dict with 4 tables
     """
     tables = dict()
     _logger.info("Converting the results to a dataframe")
@@ -104,9 +104,7 @@ def scan_result_to_dataframe(domains):
     for table_key, table_prop in tables.items():
         tables[table_key] = pd.DataFrame.from_dict(table_prop, orient='index')
 
-    dataframe = pd.concat(tables)
-
-    return dataframe
+    return tables
 
 
 def make_cache_file_name(directory, scan_id):

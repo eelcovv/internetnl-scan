@@ -12,7 +12,7 @@ from tabulate import tabulate
 from tqdm import trange
 
 from internetnl_be_scan.utils import (query_yes_no, Credentials, make_cache_file_name,
-                                      response_to_dataframe, scan_result_to_dataframe)
+                                      response_to_dataframe, scan_result_to_dataframes)
 
 _logger = logging.getLogger(LOGGER_BASE_NAME)
 
@@ -265,10 +265,10 @@ class InternetNlScanner(object):
         Export the scanned result to a sqlite database
         """
 
-        dataframe = scan_result_to_dataframe(self.domains)
+        tables = scan_result_to_dataframes(self.domains)
 
         _logger.info(f"Writing to {self.output_filename}")
         connection = sqlite3.connect(self.output_filename)
-        for table_key, df in dataframe.groupby(level=0):
-            df.to_sql(table_key, con=connection, if_exists="replace")
+        for table_key, dataframe in tables.items():
+            dataframe.to_sql(table_key, con=connection, if_exists="replace")
         _logger.info(f"Done.")
