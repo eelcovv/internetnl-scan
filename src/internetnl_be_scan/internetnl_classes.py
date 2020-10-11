@@ -1,3 +1,4 @@
+import sys
 import glob
 import logging
 import pickle
@@ -60,7 +61,7 @@ class InternetNlScanner(object):
 
         self.interval = interval
 
-        self.scans_df: pd.DataFrame = None
+        self.scans_df = None
 
         self.domains = dict()
         self.response = None
@@ -132,8 +133,9 @@ class InternetNlScanner(object):
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
+            _logger.warning(err)
             self.scan_credentials.reset_credentials()
-            raise
+            sys.exit(-1)
 
         api_response = response.json()
         _logger.debug(f"Api response: {api_response}")
