@@ -13,7 +13,8 @@ from tabulate import tabulate
 from tqdm import trange
 
 from internetnl_be_scan.utils import (query_yes_no, Credentials, make_cache_file_name,
-                                      response_to_dataframe, scan_result_to_dataframes)
+                                      response_to_dataframe, scan_result_to_dataframes,
+                                      convert_url_list)
 
 _logger = logging.getLogger(LOGGER_BASE_NAME)
 
@@ -27,6 +28,7 @@ class InternetNlScanner(object):
                  urls_to_scan: list,
                  tracking_information: str = None,
                  scan_id: str = None,
+                 n_id_chars: int = None,
                  scan_name: str = None,
                  scan_type: str = "web",
                  api_url: str = "https://batch.internet.nl/api/batch/v2/",
@@ -46,6 +48,10 @@ class InternetNlScanner(object):
         self.api_url = api_url
         self.output_filename = output_filename
         self.scan_id = scan_id
+        if n_id_chars is None:
+            self.n_id_chars = 6
+        else:
+            self.n_id_chars = n_id_chars
         if tracking_information is None:
             self.tracking_information = "{time}".format(time=time.time())
         else:
@@ -117,12 +123,14 @@ class InternetNlScanner(object):
         post a request to internet.nl to scan a list of urls
         """
 
+        urls_to_scan = convert_url_list(self.urls_to_scan, scan_type=self.scan_type)
+
         # set: api_url, username, password
         post_parameters = dict(
             type=self.scan_type,
             tracking_information=self.tracking_information,
             name=self.scan_name,
-            domains=self.urls_to_scan,
+            domains=urls_to_scan,
         )
         n_urls = len(self.urls_to_scan)
         _logger.info(f"Start request to scan {n_urls} URLS")
@@ -185,9 +193,12 @@ class InternetNlScanner(object):
 
     def read_from_cache(self):
 
-        cache_files = glob.glob(f"{self.cache_directory}/*pkl")
+        cache_files = glob.glob(f"{self.cache_directory}/*_{self.scan_type}.pkl")
         if cache_files:
             for cache_file in cache_files:
+                if self.scan_id is not None:
+                    if self.scan_id not in cache_file:
+                        continue
                 _logger.info(f"Reading response scan cache {cache_file}")
                 with open(str(cache_file), "rb") as stream:
                     domains = pickle.load(stream)
@@ -252,7 +263,7 @@ class InternetNlScanner(object):
                                         auth=self.scan_credentials.http_auth)
                 response.raise_for_status()
             else:
-                _logger.debug("Deleting canceled")
+                _logger.info(f"Scan {self.scan_id} canceled")
         else:
             _logger.info(f"Scan {self.scan_id} was not found")
 
@@ -263,10 +274,11 @@ class InternetNlScanner(object):
         response.raise_for_status()
 
         scan_results = response.json()
+        self.scan_type = scan_results["request"]["request_type"]
 
         domains = scan_results["domains"]
 
-        cache_file = make_cache_file_name(self.cache_directory, self.scan_id)
+        cache_file = make_cache_file_name(self.cache_directory, self.scan_id, self.scan_type)
         with open(str(cache_file), "wb") as stream:
             pickle.dump(domains, stream)
 
@@ -280,8 +292,15 @@ class InternetNlScanner(object):
 
         tables = scan_result_to_dataframes(self.domains)
 
-        _logger.info(f"Writing to {self.output_filename}")
-        connection = sqlite3.connect(self.output_filename)
+        if self.scan_id is None:
+            out = self.output_filename
+        else:
+
+            out = Path(self.output_filename)
+            out = "_".join([out.stem, self.scan_type, self.scan_id[:self.n_id_chars]]) + out.suffix
+
+        _logger.info(f"Writing to {out}")
+        connection = sqlite3.connect(out)
         for table_key, dataframe in tables.items():
             dataframe.to_sql(table_key, con=connection, if_exists="replace")
         _logger.info(f"Done.")

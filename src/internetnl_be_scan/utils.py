@@ -3,6 +3,7 @@ import logging
 import sys
 from pathlib import Path
 from tqdm import tqdm
+from tldextract import tldextract
 
 import keyring
 import pandas as pd
@@ -107,9 +108,9 @@ def scan_result_to_dataframes(domains):
     return tables
 
 
-def make_cache_file_name(directory, scan_id):
+def make_cache_file_name(directory, scan_id, scan_type):
     """ build the cache file name """
-    cache_file_name = f"{scan_id}.pkl"
+    cache_file_name = f"{scan_id}_{scan_type}.pkl"
     return directory / Path(cache_file_name)
 
 
@@ -150,3 +151,16 @@ def query_yes_no(question, default_answer="no"):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
+
+
+def convert_url_list(urls_to_scan: list, scan_type="web"):
+    """ cleans up the urls in a list """
+    new_url_list = list()
+    for url in urls_to_scan:
+        tld = tldextract.extract(url)
+        if scan_type == "mail":
+            clean_url = ".".join([tld.domain, tld.suffix])
+        else:
+            clean_url = ".".join([tld.subdomain, tld.domain, tld.suffix])
+        new_url_list.append(clean_url)
+    return new_url_list
