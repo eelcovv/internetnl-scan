@@ -171,9 +171,9 @@ class InternetNlScanner(object):
             status = pd.DataFrame.from_dict(api_response["request"], orient="index").T
             _logger.info("\n{}".format(tabulate(status, headers="keys", tablefmt="psql")))
             request_info = api_response["request"]
-            finished_date = request_info["finished_date"]
+            status = request_info["status"]
 
-            if finished_date is not None:
+            if status == "done":
                 self.finished_scan = True
 
     def wait_until_done(self):
