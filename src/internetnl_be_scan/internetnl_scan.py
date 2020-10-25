@@ -45,8 +45,10 @@ def parse_args(args):
     parser.add_argument("--list_all_scans", action="store_true", help="Give a list of all scans")
     parser.add_argument("--cancel_scan", action="store_true", help="Cancel the scan *scan_id*")
     parser.add_argument("--clear_all_scans", action="store_true", help="Cancel all the scans")
-    parser.add_argument("--force_cancel", action="store_true", help="Force the cancel action "
-                                                                    "without confirm")
+    parser.add_argument("--force_cancel", action="store_true",
+                        help="Force the cancel action without confirm")
+    parser.add_argument("--force_overwrite", action="store_true",
+                        help="Force to overwrite the results file if it already exists")
     parser.add_argument("--get_results", action="store_true", help="Get results of *scan_id*")
     parser.add_argument("--wait_until_done", action="store_true", help="Keep checking until done")
     parser.add_argument("--export_to_sqlite", action="store_true", help="Export the results to "
@@ -91,7 +93,8 @@ def main(argv):
                       cancel_scan=args.cancel_scan,
                       clear_all_scans=args.clear_all_scans,
                       export_results=args.export_to_sqlite,
-                      wait_until_done=args.wait_until_done
+                      wait_until_done=args.wait_until_done,
+                      force_overwrite=args.force_overwrite
                       )
 
 

@@ -42,7 +42,8 @@ class InternetNlScanner(object):
                  list_all_scans: bool = False,
                  clear_all_scans: bool = False,
                  export_results: bool = False,
-                 force_cancel: bool = False
+                 force_cancel: bool = False,
+                 force_overwrite: bool = False
                  ):
 
         self.api_url = api_url
@@ -64,6 +65,7 @@ class InternetNlScanner(object):
         self.urls_to_scan = urls_to_scan
 
         self.force_cancel = force_cancel
+        self.force_overwrite = force_overwrite
 
         self.interval = interval
 
@@ -304,8 +306,14 @@ class InternetNlScanner(object):
             out = Path(self.output_filename)
             out = "_".join([out.stem, self.scan_type, self.scan_id[:self.n_id_chars]]) + out.suffix
 
-        _logger.info(f"Writing to {out}")
-        connection = sqlite3.connect(out)
-        for table_key, dataframe in tables.items():
-            dataframe.to_sql(table_key, con=connection, if_exists="replace")
-        _logger.info(f"Done.")
+        write_data = True
+        if Path(out).exists() and not self.force_overwrite:
+            write_data = query_yes_no(f"Results file {out} already exists. Overwrite?") == "yes"
+        if write_data:
+            _logger.info(f"Writing to {out}")
+            connection = sqlite3.connect(out)
+            for table_key, dataframe in tables.items():
+                dataframe.to_sql(table_key, con=connection, if_exists="replace")
+            _logger.info(f"Done.")
+        else:
+            _logger.info("Skip writing results file")
