@@ -90,7 +90,7 @@ class InternetNlScanner(object):
             if get_results:
                 self.get_results()
             if delete_scan:
-                self.delete_scan()
+                self.delete_scan(scan_id=self.scan_id)
         elif self.urls_to_scan:
             self.start_url_scan()
 
@@ -233,6 +233,7 @@ class InternetNlScanner(object):
             _logger.info("Deleting")
             for scan_id in self.scans_df["request_id"]:
                 _logger.info(f"Deleting {scan_id}")
+                self.delete_scan(scan_id=scan_id)
         else:
             _logger.info("Delete all canceled")
 
@@ -244,28 +245,32 @@ class InternetNlScanner(object):
         self.get_all_scans()
         _logger.info("\n{}".format(tabulate(self.scans_df, headers='keys', tablefmt='psql')))
 
-    def delete_scan(self):
+    def delete_scan(self, scan_id=None):
         """
         Delete the scan with the id 'scan_id'
         """
 
         self.get_all_scans()
-        mask = self.scans_df["request_id"] == self.scan_id
+        mask = self.scans_df["request_id"] == scan_id
         if any(mask):
             scan = self.scans_df[mask]
-            _logger.info("\n{}".format(tabulate(scan, headers='keys', tablefmt='psql')))
-            delete = True
-            if not self.force_delete:
-                delete = query_yes_no("Continue deleting this scan ?") == "yes"
-
-            if delete:
-                response = requests.get(f"{self.api_url}/requests/{self.scan_id}/cancel",
-                                        auth=self.scan_credentials.http_auth)
-                response.raise_for_status()
+            if any(scan["status"] == "cancelled"):
+                _logger.info(f"Scan {scan_id} has already been already cancelled")
             else:
-                _logger.info(f"Scan {self.scan_id} canceled")
+                _logger.info("\n{}".format(tabulate(scan, headers='keys', tablefmt='psql')))
+                delete = True
+                if not self.force_delete:
+                    delete = query_yes_no("Continue deleting this scan ?") == "yes"
+
+                if delete:
+                    response = requests.patch(f"{self.api_url}/requests/{scan_id}",
+                                              json=dict(status="cancelled"),
+                                              auth=self.scan_credentials.http_auth)
+                    response.raise_for_status()
+                else:
+                    _logger.info(f"Scan {scan_id} canceled")
         else:
-            _logger.info(f"Scan {self.scan_id} was not found")
+            _logger.info(f"Scan {scan_id} was not found")
 
     def get_results(self):
 

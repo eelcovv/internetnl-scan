@@ -77,6 +77,7 @@ def _flatten_dict(current_key, current_value, new_dict):
         new_dict[current_key] = current_value
 
 
+# noinspection GrazieInspection
 def scan_result_to_dataframes(domains):
     """
     Convert a dict internet.nl scans to a flat dictionary with on entry per result type

@@ -31,6 +31,8 @@ def parse_args(args):
                         , action="store_const", const=logging.DEBUG)
     parser.add_argument("--api_url", help="Api URL. If not given, default is taken")
     parser.add_argument("--domain_file", action="store")
+    parser.add_argument("--url_column_key", action="store", default="url",
+                        help="Name of the url column in the domain input file")
     parser.add_argument("--url", action="append", nargs="*")
     parser.add_argument("--output_filename", action="store", help="Output file",
                         default="internet_nl.sqlite")
@@ -65,7 +67,14 @@ def main(argv):
     if args.domain_file is not None:
         _logger.info(f"Reading urls from {args.domain_file}")
         urls = pd.read_csv(args.domain_file)
-        urls_to_scan.extend(urls["url"].tolist())
+        try:
+            urls_to_scan.extend(urls[args.url_column_key].tolist())
+        except KeyError as err:
+            _logger.warning(err)
+            _logger.warning(f"Could not find column {args.url_column_key} in file "
+                            f"{args.domain_file}.\nPlease specify the name of the url column in "
+                            f"this file using the '--url_column_key' command line option")
+            sys.exit(-1)
 
     if args.url is not None:
         for urls in args.url:
