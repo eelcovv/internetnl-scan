@@ -38,11 +38,11 @@ class InternetNlScanner(object):
                  output_filename: str = None,
                  wait_until_done: bool = False,
                  get_results: bool = False,
-                 delete_scan: bool = False,
+                 cancel_scan: bool = False,
                  list_all_scans: bool = False,
                  clear_all_scans: bool = False,
                  export_results: bool = False,
-                 force_delete: bool = False
+                 force_cancel: bool = False
                  ):
 
         self.api_url = api_url
@@ -63,7 +63,7 @@ class InternetNlScanner(object):
         self.scan_type = scan_type
         self.urls_to_scan = urls_to_scan
 
-        self.force_delete = force_delete
+        self.force_cancel = force_cancel
 
         self.interval = interval
 
@@ -89,8 +89,8 @@ class InternetNlScanner(object):
             self.check_status()
             if get_results:
                 self.get_results()
-            if delete_scan:
-                self.delete_scan(scan_id=self.scan_id)
+            if cancel_scan:
+                self.cancel_scan(scan_id=self.scan_id)
         elif self.urls_to_scan:
             self.start_url_scan()
 
@@ -113,7 +113,7 @@ class InternetNlScanner(object):
                                  "do:\n\n >>> internetnl_scan --domain www.example.com")
 
         if clear_all_scans:
-            self.delete_all_scans()
+            self.cancel_all_scans()
 
         if export_results:
             self.export_results()
@@ -219,23 +219,23 @@ class InternetNlScanner(object):
 
         self.scans_df = response_to_dataframe(response)
 
-    def delete_all_scans(self):
+    def cancel_all_scans(self):
         """
-        Delete all available scanes
+        Cancel all available scans
         """
 
         self.list_all_scans()
-        _logger.warning("You are about to delete the results of all these scans.")
-        delete_all = True
-        if not self.force_delete:
-            delete_all = query_yes_no("Continue deleting all scans ?") == "yes"
-        if delete_all:
-            _logger.info("Deleting")
+        _logger.warning("You are about to cancel the results of all these scans.")
+        cancel_all = True
+        if not self.force_cancel:
+            cancel_all = query_yes_no("Continue canceling all scans ?") == "yes"
+        if cancel_all:
+            _logger.info("Canceling")
             for scan_id in self.scans_df["request_id"]:
-                _logger.info(f"Deleting {scan_id}")
-                self.delete_scan(scan_id=scan_id)
+                _logger.info(f"Canceling {scan_id}")
+                self.cancel_scan(scan_id=scan_id)
         else:
-            _logger.info("Delete all canceled")
+            _logger.info("Cancel all canceled")
 
     def list_all_scans(self):
         """
@@ -245,9 +245,9 @@ class InternetNlScanner(object):
         self.get_all_scans()
         _logger.info("\n{}".format(tabulate(self.scans_df, headers='keys', tablefmt='psql')))
 
-    def delete_scan(self, scan_id=None):
+    def cancel_scan(self, scan_id=None):
         """
-        Delete the scan with the id 'scan_id'
+        Cancel the scan with the id 'scan_id'
         """
 
         self.get_all_scans()
@@ -258,11 +258,11 @@ class InternetNlScanner(object):
                 _logger.info(f"Scan {scan_id} has already been already cancelled")
             else:
                 _logger.info("\n{}".format(tabulate(scan, headers='keys', tablefmt='psql')))
-                delete = True
-                if not self.force_delete:
-                    delete = query_yes_no("Continue deleting this scan ?") == "yes"
+                cancel = True
+                if not self.force_cancel:
+                    cancel = query_yes_no("Continue canceling this scan ?") == "yes"
 
-                if delete:
+                if cancel:
                     response = requests.patch(f"{self.api_url}/requests/{scan_id}",
                                               json=dict(status="cancelled"),
                                               auth=self.scan_credentials.http_auth)
