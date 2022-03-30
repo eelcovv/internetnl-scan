@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 from tqdm import tqdm
 from tldextract import tldextract
+from domain_analyser.utils import get_clean_url
 
 import keyring
 import pandas as pd
@@ -158,10 +159,7 @@ def convert_url_list(urls_to_scan: list, scan_type="web"):
     """ cleans up the urls in a list """
     new_url_list = list()
     for url in urls_to_scan:
-        tld = tldextract.extract(url)
-        if scan_type == "mail":
-            clean_url = ".".join([tld.domain, tld.suffix])
-        else:
-            clean_url = ".".join([tld.subdomain, tld.domain, tld.suffix])
-        new_url_list.append(clean_url)
+        clean_url = get_clean_url(url)
+        if clean_url is not None and clean_url not in new_url_list:
+            new_url_list.append(clean_url)
     return new_url_list
