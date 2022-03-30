@@ -2,14 +2,14 @@ import getpass
 import logging
 import sys
 from pathlib import Path
-from tqdm import tqdm
-from tldextract import tldextract
-from domain_analyser.utils import get_clean_url
 
 import keyring
 import pandas as pd
-from internetnl_be_scan import LOGGER_BASE_NAME
+from domain_analyser.utils import get_clean_url
 from requests.auth import HTTPBasicAuth
+from tqdm import tqdm
+
+from internetnl_be_scan import LOGGER_BASE_NAME
 
 _logger = logging.getLogger(LOGGER_BASE_NAME)
 
