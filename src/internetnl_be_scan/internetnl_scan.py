@@ -69,6 +69,7 @@ def main(argv):
     if args.domain_file is not None:
         _logger.info(f"Reading urls from {args.domain_file}")
         urls = pd.read_csv(args.domain_file)
+        urls.dropna(axis=0, inplace=True)
         try:
             urls_to_scan.extend(urls[args.url_column_key].tolist())
         except KeyError as err:

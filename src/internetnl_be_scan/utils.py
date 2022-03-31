@@ -5,6 +5,7 @@ from pathlib import Path
 
 import keyring
 import pandas as pd
+import numpy as np
 from domain_analyser.utils import get_clean_url
 from requests.auth import HTTPBasicAuth
 from tqdm import tqdm
@@ -160,6 +161,6 @@ def convert_url_list(urls_to_scan: list, scan_type="web"):
     new_url_list = list()
     for url in urls_to_scan:
         clean_url = get_clean_url(url)
-        if clean_url is not None and clean_url not in new_url_list:
+        if clean_url is not None and not np.isnan(clean_url) and clean_url not in new_url_list:
             new_url_list.append(clean_url)
     return new_url_list
