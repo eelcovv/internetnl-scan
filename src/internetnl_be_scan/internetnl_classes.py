@@ -216,7 +216,10 @@ class InternetNlScanner(object):
         Get a list of all scans
         """
         response = requests.get(f"{self.api_url}/requests", auth=self.scan_credentials.http_auth)
-        response.raise_for_status()
+        if response.status_code != 200:
+            _logger.warning("Failed logging in. Going to reset your credentials so that you can login again")
+            self.scan_credentials.reset_credentials()
+            response.raise_for_status()
 
         self.scans_df = response_to_dataframe(response)
 
