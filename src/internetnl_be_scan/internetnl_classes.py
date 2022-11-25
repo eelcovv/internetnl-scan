@@ -8,7 +8,6 @@ from pathlib import Path
 
 import pandas as pd
 import requests
-from internetnl_be_scan import LOGGER_BASE_NAME
 from tabulate import tabulate
 from tqdm import trange
 
@@ -16,7 +15,7 @@ from internetnl_be_scan.utils import (query_yes_no, Credentials, make_cache_file
                                       response_to_dataframe, scan_result_to_dataframes,
                                       convert_url_list)
 
-_logger = logging.getLogger(LOGGER_BASE_NAME)
+_logger = logging.getLogger("internetnl_scan")
 
 
 class InternetNlScanner(object):

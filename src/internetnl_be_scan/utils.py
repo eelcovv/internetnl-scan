@@ -10,9 +10,7 @@ from domain_analyser.utils import get_clean_url
 from requests.auth import HTTPBasicAuth
 from tqdm import tqdm
 
-from internetnl_be_scan import LOGGER_BASE_NAME
-
-_logger = logging.getLogger(LOGGER_BASE_NAME)
+_logger = logging.getLogger("internetnl_scan")
 
 
 class Credentials(object):
