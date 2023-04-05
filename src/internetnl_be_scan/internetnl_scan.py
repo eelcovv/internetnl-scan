@@ -53,6 +53,7 @@ def parse_args(args):
     parser.add_argument("--wait_until_done", action="store_true", help="Keep checking until done")
     parser.add_argument("--export_to_sqlite", action="store_true", help="Export the results to "
                                                                         "a flat sqlite table")
+    parser.add_argument("--dry_run", action="store_true", help="Do not submit the request, only show the actions")
 
     parsed_arguments = parser.parse_args(args)
 
@@ -95,7 +96,9 @@ def main(argv):
                       clear_all_scans=args.clear_all_scans,
                       export_results=args.export_to_sqlite,
                       wait_until_done=args.wait_until_done,
-                      force_overwrite=args.force_overwrite
+                      force_overwrite=args.force_overwrite,
+                      dry_run=args.dry_run,
+
                       )
 
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import keyring
 import pandas as pd
-import numpy as np
+from tldextract import tldextract
 from domain_analyser.utils import get_clean_url
 from requests.auth import HTTPBasicAuth
 from tqdm import tqdm
@@ -162,3 +162,16 @@ def convert_url_list(urls_to_scan: list, scan_type="web"):
         if clean_url is not None and clean_url not in new_url_list:
             new_url_list.append(clean_url)
     return new_url_list
+
+
+def remove_sub_domains(urls_to_scan):
+    """ remove www or any other subdomain from the url """
+    new_url_list = list()
+    for url in urls_to_scan:
+        tld = tldextract.extract(url)
+        domain_and_suffix = ".".join([tld.domain, tld.suffix])
+        new_url_list.append(domain_and_suffix)
+    return new_url_list
+
+
+

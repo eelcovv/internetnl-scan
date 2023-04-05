@@ -13,7 +13,7 @@ from tqdm import trange
 
 from internetnl_be_scan.utils import (query_yes_no, Credentials, make_cache_file_name,
                                       response_to_dataframe, scan_result_to_dataframes,
-                                      convert_url_list)
+                                      convert_url_list, remove_sub_domains)
 
 _logger = logging.getLogger("internetnl_scan")
 
@@ -42,7 +42,8 @@ class InternetNlScanner(object):
                  clear_all_scans: bool = False,
                  export_results: bool = False,
                  force_cancel: bool = False,
-                 force_overwrite: bool = False
+                 force_overwrite: bool = False,
+                 dry_run: bool = False,
                  ):
 
         self.api_url = api_url
@@ -65,6 +66,7 @@ class InternetNlScanner(object):
 
         self.force_cancel = force_cancel
         self.force_overwrite = force_overwrite
+        self.dry_run = dry_run
 
         self.interval = interval
 
@@ -126,6 +128,10 @@ class InternetNlScanner(object):
 
         urls_to_scan = convert_url_list(self.urls_to_scan, scan_type=self.scan_type)
 
+        if self.scan_type:
+            # voor de email scan neem je alleen de domain name
+            urls_to_scan = remove_sub_domains(urls_to_scan)
+
         # set: api_url, username, password
         post_parameters = dict(
             type=self.scan_type,
@@ -135,26 +141,28 @@ class InternetNlScanner(object):
         )
         n_urls = len(self.urls_to_scan)
         _logger.info(f"Start request to scan {n_urls} URLS")
-        response = requests.post(f'{self.api_url}/requests',
-                                 json=post_parameters,
-                                 auth=self.scan_credentials.http_auth)
+        if not self.dry_run:
+            response = requests.post(f'{self.api_url}/requests',
+                                     json=post_parameters,
+                                     auth=self.scan_credentials.http_auth)
 
-        try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as err:
-            _logger.warning(err)
-            self.scan_credentials.reset_credentials()
-            sys.exit(-1)
+            try:
+                response.raise_for_status()
+            except requests.exceptions.HTTPError as err:
+                _logger.warning(err)
+                self.scan_credentials.reset_credentials()
+                sys.exit(-1)
 
-        api_response = response.json()
-        _logger.debug(f"Api response: {api_response}")
-        api_version = api_response["api_version"]
-        _logger.debug(f"Api version: {api_version}")
-        request_info = api_response["request"]
+            api_response = response.json()
+            _logger.debug(f"Api response: {api_response}")
+            api_version = api_response["api_version"]
+            _logger.debug(f"Api version: {api_version}")
+            request_info = api_response["request"]
 
-        self.scan_id = request_info['request_id']
-
-        _logger.info(f"Started scan with ID {self.scan_id}")
+            self.scan_id = request_info['request_id']
+            _logger.info(f"Started scan with ID {self.scan_id}")
+        else:
+            _logger.info(f"In dry run mode. Not started")
 
     def check_status(self):
 
