@@ -5,16 +5,16 @@ from pathlib import Path
 
 import keyring
 import pandas as pd
-from tldextract import tldextract
 from domain_analyser.utils import get_clean_url
 from requests.auth import HTTPBasicAuth
+from tldextract import tldextract
 from tqdm import tqdm
 
 _logger = logging.getLogger("internetnl_scan")
 
 
 class Credentials(object):
-    """ stores the user credentials in a key ring """
+    """stores the user credentials in a key ring"""
 
     def __init__(self, service_name="Internet.nl"):
         self.service_name = service_name
@@ -27,15 +27,17 @@ class Credentials(object):
         self.get_credentials()
 
     def get_credentials(self):
-        """ Get the user credentials, either via cli, or via keyring """
+        """Get the user credentials, either via cli, or via keyring"""
         self._credentials = keyring.get_credential(self.service_name, None)
         if self._credentials is None:
             _logger.debug("Get credentials from cli")
             self.username = input("Username: ")
             self.password = getpass.getpass()
-            keyring.set_password(service_name=self.service_name,
-                                 username=self.username,
-                                 password=self.password)
+            keyring.set_password(
+                service_name=self.service_name,
+                username=self.username,
+                password=self.password,
+            )
         else:
             _logger.debug("Get credentials from keyring")
             self.username = self._credentials.username
@@ -44,7 +46,7 @@ class Credentials(object):
         self.http_auth = HTTPBasicAuth(self.username, self.password)
 
     def reset_credentials(self):
-        """ in case of login failure: reset the stored credentials """
+        """in case of login failure: reset the stored credentials"""
         keyring.delete_password(service_name=self.service_name, username=self.username)
 
 
@@ -61,14 +63,14 @@ def response_to_dataframe(response):
     """
     result = response.json()
     all_scans = result["requests"]
-    all_scans = [pd.DataFrame.from_dict(scan, orient='index').T for scan in all_scans]
+    all_scans = [pd.DataFrame.from_dict(scan, orient="index").T for scan in all_scans]
     scans_df = pd.concat(all_scans).reset_index().drop("index", axis=1)
     return scans_df
 
 
 def _flatten_dict(current_key, current_value, new_dict):
-    """ gegeven de current key en value van een dict, zet de value als een string, of als een
-    dict maak een nieuwe key gebaseerd of the huidige key en dict key """
+    """gegeven de current key en value van een dict, zet de value als een string, of als een
+    dict maak een nieuwe key gebaseerd of the huidige key en dict key"""
     if isinstance(current_value, dict):
         for key, value in current_value.items():
             new_key = "_".join([current_key, key])
@@ -104,13 +106,13 @@ def scan_result_to_dataframes(domains):
                 tables[table_key][domain] = table_prop
     # convert the dictionaries to a pandas data frames
     for table_key, table_prop in tables.items():
-        tables[table_key] = pd.DataFrame.from_dict(table_prop, orient='index')
+        tables[table_key] = pd.DataFrame.from_dict(table_prop, orient="index")
 
     return tables
 
 
 def make_cache_file_name(directory, scan_id, scan_type):
-    """ build the cache file name """
+    """build the cache file name"""
     cache_file_name = f"{scan_id}_{scan_type}.pkl"
     return directory / Path(cache_file_name)
 
@@ -130,8 +132,7 @@ def query_yes_no(question, default_answer="no"):
     str:
         "yes" or "no", depending on the input of the user
     """
-    valid = {"yes": "yes", "y": "yes", "ye": "yes",
-             "no": "no", "n": "no"}
+    valid = {"yes": "yes", "y": "yes", "ye": "yes", "no": "no", "n": "no"}
     if not default_answer:
         prompt = " [y/n] "
     elif default_answer == "yes":
@@ -145,17 +146,16 @@ def query_yes_no(question, default_answer="no"):
         # sys.stdout.write(question + prompt)
         _logger.warning(question + prompt)
         choice = input().lower()
-        if default_answer is not None and choice == '':
+        if default_answer is not None and choice == "":
             return default_answer
         elif choice in list(valid.keys()):
             return valid[choice]
         else:
-            sys.stdout.write("Please respond with 'yes' or 'no' "
-                             "(or 'y' or 'n').\n")
+            sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
 
 
 def convert_url_list(urls_to_scan: list, scan_type="web"):
-    """ cleans up the urls in a list """
+    """cleans up the urls in a list"""
     new_url_list = list()
     for url in urls_to_scan:
         clean_url = get_clean_url(url)
@@ -165,13 +165,10 @@ def convert_url_list(urls_to_scan: list, scan_type="web"):
 
 
 def remove_sub_domains(urls_to_scan):
-    """ remove www or any other subdomain from the url """
+    """remove www or any other subdomain from the url"""
     new_url_list = list()
     for url in urls_to_scan:
         tld = tldextract.extract(url)
         domain_and_suffix = ".".join([tld.domain, tld.suffix])
         new_url_list.append(domain_and_suffix)
     return new_url_list
-
-
-

@@ -1,8 +1,8 @@
-import sys
 import glob
 import logging
 import pickle
 import sqlite3
+import sys
 import time
 from pathlib import Path
 
@@ -11,9 +11,15 @@ import requests
 from tabulate import tabulate
 from tqdm import trange
 
-from internetnl_be_scan.utils import (query_yes_no, Credentials, make_cache_file_name,
-                                      response_to_dataframe, scan_result_to_dataframes,
-                                      convert_url_list, remove_sub_domains)
+from internetnl_be_scan.utils import (
+    query_yes_no,
+    Credentials,
+    make_cache_file_name,
+    response_to_dataframe,
+    scan_result_to_dataframes,
+    convert_url_list,
+    remove_sub_domains,
+)
 
 _logger = logging.getLogger("internetnl_scan")
 
@@ -23,28 +29,29 @@ class InternetNlScanner(object):
     Python interfaces for Internet.nl API
     """
 
-    def __init__(self,
-                 urls_to_scan: list,
-                 tracking_information: str = None,
-                 scan_id: str = None,
-                 n_id_chars: int = None,
-                 scan_name: str = None,
-                 scan_type: str = "web",
-                 api_url: str = "https://batch.internet.nl/api/batch/v2/",
-                 interval: int = 30,
-                 cache_directory: str = "cache",
-                 ignore_cache: bool = True,
-                 output_filename: str = None,
-                 wait_until_done: bool = False,
-                 get_results: bool = False,
-                 cancel_scan: bool = False,
-                 list_all_scans: bool = False,
-                 clear_all_scans: bool = False,
-                 export_results: bool = False,
-                 force_cancel: bool = False,
-                 force_overwrite: bool = False,
-                 dry_run: bool = False,
-                 ):
+    def __init__(
+        self,
+        urls_to_scan: list,
+        tracking_information: str = None,
+        scan_id: str = None,
+        n_id_chars: int = None,
+        scan_name: str = None,
+        scan_type: str = "web",
+        api_url: str = "https://batch.internet.nl/api/batch/v2/",
+        interval: int = 30,
+        cache_directory: str = "cache",
+        ignore_cache: bool = True,
+        output_filename: str = None,
+        wait_until_done: bool = False,
+        get_results: bool = False,
+        cancel_scan: bool = False,
+        list_all_scans: bool = False,
+        clear_all_scans: bool = False,
+        export_results: bool = False,
+        force_cancel: bool = False,
+        force_overwrite: bool = False,
+        dry_run: bool = False,
+    ):
 
         self.api_url = api_url
         self.output_filename = output_filename
@@ -58,7 +65,9 @@ class InternetNlScanner(object):
         else:
             self.tracking_information = tracking_information
         if scan_name is None:
-            self.scan_name = "Scan {}".format(pd.Timestamp.now().strftime("%Y%m%d%H%M%S"))
+            self.scan_name = "Scan {}".format(
+                pd.Timestamp.now().strftime("%Y%m%d%H%M%S")
+            )
         else:
             self.scan_name = scan_name
         self.scan_type = scan_type
@@ -106,14 +115,18 @@ class InternetNlScanner(object):
             self.list_all_scans()
             if self.scan_id is None:
                 if self.scans_df is not None:
-                    _logger.info("\n\nThis list of scans is available. In order to do something "
-                                 "with a specific scan, run:\n\n"
-                                 " >>> internetnl_scan --scan_id <request_id> [-option]\n\n"
-                                 "To see the available options run:\n\n"
-                                 " >>> internetnl_scan --help")
+                    _logger.info(
+                        "\n\nThis list of scans is available. In order to do something "
+                        "with a specific scan, run:\n\n"
+                        " >>> internetnl_scan --scan_id <request_id> [-option]\n\n"
+                        "To see the available options run:\n\n"
+                        " >>> internetnl_scan --help"
+                    )
                 else:
-                    _logger.info("\n\nNo previous scans are available. To launch your first scan "
-                                 "do:\n\n >>> internetnl_scan --domain www.example.com")
+                    _logger.info(
+                        "\n\nNo previous scans are available. To launch your first scan "
+                        "do:\n\n >>> internetnl_scan --domain www.example.com"
+                    )
 
         if clear_all_scans:
             self.cancel_all_scans()
@@ -142,9 +155,11 @@ class InternetNlScanner(object):
         n_urls = len(self.urls_to_scan)
         _logger.info(f"Start request to scan {n_urls} URLS")
         if not self.dry_run:
-            response = requests.post(f'{self.api_url}/requests',
-                                     json=post_parameters,
-                                     auth=self.scan_credentials.http_auth)
+            response = requests.post(
+                f"{self.api_url}/requests",
+                json=post_parameters,
+                auth=self.scan_credentials.http_auth,
+            )
 
             try:
                 response.raise_for_status()
@@ -159,15 +174,17 @@ class InternetNlScanner(object):
             _logger.debug(f"Api version: {api_version}")
             request_info = api_response["request"]
 
-            self.scan_id = request_info['request_id']
+            self.scan_id = request_info["request_id"]
             _logger.info(f"Started scan with ID {self.scan_id}")
         else:
             _logger.info(f"In dry run mode. Not started")
 
     def check_status(self):
 
-        response = requests.get(f"{self.api_url}/requests/{self.scan_id}",
-                                auth=self.scan_credentials.http_auth)
+        response = requests.get(
+            f"{self.api_url}/requests/{self.scan_id}",
+            auth=self.scan_credentials.http_auth,
+        )
         response.raise_for_status()
 
         try:
@@ -178,7 +195,9 @@ class InternetNlScanner(object):
 
             api_response = response.json()
             status = pd.DataFrame.from_dict(api_response["request"], orient="index").T
-            _logger.info("\n{}".format(tabulate(status, headers="keys", tablefmt="psql")))
+            _logger.info(
+                "\n{}".format(tabulate(status, headers="keys", tablefmt="psql"))
+            )
             request_info = api_response["request"]
             status = request_info["status"]
 
@@ -215,7 +234,9 @@ class InternetNlScanner(object):
                     self.domains[url] = scan_result
 
             if self.domains:
-                _logger.info(f"Retrieved scan results from cache for {len(self.domains)} domains")
+                _logger.info(
+                    f"Retrieved scan results from cache for {len(self.domains)} domains"
+                )
             else:
                 _logger.debug("No domains retrieved from cache")
 
@@ -223,9 +244,13 @@ class InternetNlScanner(object):
         """
         Get a list of all scans
         """
-        response = requests.get(f"{self.api_url}/requests", auth=self.scan_credentials.http_auth)
+        response = requests.get(
+            f"{self.api_url}/requests", auth=self.scan_credentials.http_auth
+        )
         if response.status_code != 200:
-            _logger.warning("Failed logging in. Going to reset your credentials so that you can login again")
+            _logger.warning(
+                "Failed logging in. Going to reset your credentials so that you can login again"
+            )
             self.scan_credentials.reset_credentials()
             response.raise_for_status()
 
@@ -255,7 +280,9 @@ class InternetNlScanner(object):
         """
 
         self.get_all_scans()
-        _logger.info("\n{}".format(tabulate(self.scans_df, headers='keys', tablefmt='psql')))
+        _logger.info(
+            "\n{}".format(tabulate(self.scans_df, headers="keys", tablefmt="psql"))
+        )
 
     def cancel_scan(self, scan_id=None):
         """
@@ -269,15 +296,19 @@ class InternetNlScanner(object):
             if any(scan["status"] == "cancelled"):
                 _logger.info(f"Scan {scan_id} has already been already cancelled")
             else:
-                _logger.info("\n{}".format(tabulate(scan, headers='keys', tablefmt='psql')))
+                _logger.info(
+                    "\n{}".format(tabulate(scan, headers="keys", tablefmt="psql"))
+                )
                 cancel = True
                 if not self.force_cancel:
                     cancel = query_yes_no("Continue canceling this scan ?") == "yes"
 
                 if cancel:
-                    response = requests.patch(f"{self.api_url}/requests/{scan_id}",
-                                              json=dict(status="cancelled"),
-                                              auth=self.scan_credentials.http_auth)
+                    response = requests.patch(
+                        f"{self.api_url}/requests/{scan_id}",
+                        json=dict(status="cancelled"),
+                        auth=self.scan_credentials.http_auth,
+                    )
                     response.raise_for_status()
                 else:
                     _logger.info(f"Scan {scan_id} canceled")
@@ -286,8 +317,10 @@ class InternetNlScanner(object):
 
     def get_results(self):
 
-        response = requests.get(f"{self.api_url}/requests/{self.scan_id}/results",
-                                auth=self.scan_credentials.http_auth)
+        response = requests.get(
+            f"{self.api_url}/requests/{self.scan_id}/results",
+            auth=self.scan_credentials.http_auth,
+        )
         response.raise_for_status()
 
         scan_results = response.json()
@@ -295,7 +328,9 @@ class InternetNlScanner(object):
 
         domains = scan_results["domains"]
 
-        cache_file = make_cache_file_name(self.cache_directory, self.scan_id, self.scan_type)
+        cache_file = make_cache_file_name(
+            self.cache_directory, self.scan_id, self.scan_type
+        )
         with open(str(cache_file), "wb") as stream:
             pickle.dump(domains, stream)
 
@@ -314,11 +349,16 @@ class InternetNlScanner(object):
         else:
 
             out = Path(self.output_filename)
-            out = "_".join([out.stem, self.scan_type, self.scan_id[:self.n_id_chars]]) + out.suffix
+            out = (
+                "_".join([out.stem, self.scan_type, self.scan_id[: self.n_id_chars]])
+                + out.suffix
+            )
 
         write_data = True
         if Path(out).exists() and not self.force_overwrite:
-            write_data = query_yes_no(f"Results file {out} already exists. Overwrite?") == "yes"
+            write_data = (
+                query_yes_no(f"Results file {out} already exists. Overwrite?") == "yes"
+            )
         if write_data:
             _logger.info(f"Writing to {out}")
             connection = sqlite3.connect(out)
