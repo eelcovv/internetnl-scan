@@ -111,7 +111,7 @@ class InternetNlScanner(object):
             self.wait_until_done()
 
         if list_all_scans or self.scan_id is None:
-            # als scan_id hier nog None is  dan hebben we nog niks gedaan. Geef een lijst
+            # Als scan_id hier nog None is dan hebben we nog niks gedaan. Geef een lijst
             self.list_all_scans()
             if self.scan_id is None:
                 if self.scans_df is not None:
