@@ -160,18 +160,24 @@ def convert_url_list(urls_to_scan: list, scan_type="web"):
     """cleans up the urls in a list"""
     new_url_list = list()
     for url in urls_to_scan:
-        clean_url = get_clean_url(url)
+        clean_url, suffix = get_clean_url(url)
         if clean_url is not None and clean_url not in new_url_list:
             new_url_list.append(clean_url)
     return new_url_list
 
 
-def remove_sub_domains(urls_to_scan):
+def remove_sub_domain(url: str) -> str:
+    """remove www or any other subdomain from the url"""
+    tld = tldextract.extract(url)
+    domain_and_suffix = ".".join([tld.domain, tld.suffix])
+    return domain_and_suffix
+
+
+def remove_sub_domains(urls_to_scan: list) -> list:
     """remove www or any other subdomain from the url"""
     new_url_list = list()
     for url in urls_to_scan:
-        tld = tldextract.extract(url)
-        domain_and_suffix = ".".join([tld.domain, tld.suffix])
+        domain_and_suffix = remove_sub_domain(url)
         new_url_list.append(domain_and_suffix)
     return new_url_list
 
