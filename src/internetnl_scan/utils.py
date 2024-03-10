@@ -183,7 +183,7 @@ def get_clean_url(url, cache_dir=None):
     if cache_dir is not None:
         extract = tldextract.TLDExtract(cache_dir=cache_dir)
     else:
-        extract = tldextract.tldextract.extract
+        extract = tldextract.extract
     try:
         url = url.strip()
     except AttributeError:
