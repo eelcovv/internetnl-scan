@@ -5,7 +5,6 @@ from pathlib import Path
 
 import keyring
 import pandas as pd
-from domain_analyser.utils import get_clean_url
 from requests.auth import HTTPBasicAuth
 from tldextract import tldextract
 from tqdm import tqdm
@@ -172,3 +171,54 @@ def remove_sub_domains(urls_to_scan):
         domain_and_suffix = ".".join([tld.domain, tld.suffix])
         new_url_list.append(domain_and_suffix)
     return new_url_list
+
+
+def get_clean_url(url, cache_dir=None):
+    clean_url = url
+    suffix = None
+    if cache_dir is not None:
+        extract = tldextract.TLDExtract(cache_dir=cache_dir)
+    else:
+        extract = tldextract.tldextract.extract
+    try:
+        url = url.strip()
+    except AttributeError:
+        pass
+    else:
+        try:
+            tld = extract(url)
+        except TypeError:
+            _logger.debug(f"Type error occurred for {url}")
+        except ssl.SSLEOFError as ssl_err:
+            _logger.debug(f"SSLEOF error occurred for {url}")
+        except requests.exceptions.SSLError as req_err:
+            _logger.debug(f"SSLError error occurred for {url}")
+        else:
+            if tld.subdomain == "" and tld.domain == "" and tld.suffix == "":
+                clean_url = None
+            elif tld.subdomain == "" and tld.suffix == "":
+                clean_url = None
+            elif tld.subdomain == "" and tld.domain == "":
+                clean_url = None
+            elif tld.domain == "" and tld.suffix == "":
+                clean_url = None
+            elif tld.subdomain == "":
+                clean_url = ".".join([tld.domain, tld.suffix])
+            elif tld.suffix == "":
+                clean_url = ".".join([tld.subdomain, tld.domain])
+            elif tld.domain == "":
+                clean_url = ".".join([tld.subdomain, tld.suffix])
+            else:
+                clean_url = ".".join([tld.subdomain, tld.domain, tld.suffix])
+            if clean_url is not None:
+                if " " in clean_url:
+                    _logger.debug(
+                        f"{clean_url} cannot be real url with space. skipping"
+                    )
+                    clean_url = None
+                else:
+                    # We hebben een url gevonden. Maak hem met kleine letters en sla de suffix op
+                    clean_url = clean_url.lower()
+                    suffix = tld.suffix.lower()
+
+    return clean_url, suffix
