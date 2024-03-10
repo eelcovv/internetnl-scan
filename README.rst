@@ -3,13 +3,13 @@ internetnl_scan
 ==================
 
 
-Add a short description here!
+A tool to control the scans at Internet.nl
 
 
 Description
 ===========
 
-A longer description of your project goes here...
+This utility can be used to submit and access your internet.nl scans
 
 
 Note
