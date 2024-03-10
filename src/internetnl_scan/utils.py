@@ -1,10 +1,13 @@
 import getpass
 import logging
 import sys
+import ssl
 from pathlib import Path
 
 import keyring
 import pandas as pd
+import requests
+import requests_kerberos_proxy
 from requests.auth import HTTPBasicAuth
 from tldextract import tldextract
 from tqdm import tqdm
@@ -174,6 +177,7 @@ def remove_sub_domains(urls_to_scan):
 
 
 def get_clean_url(url, cache_dir=None):
+
     clean_url = url
     suffix = None
     if cache_dir is not None:
