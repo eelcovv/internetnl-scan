@@ -11,7 +11,7 @@ import requests
 from tabulate import tabulate
 from tqdm import trange
 
-from internetnl_be_scan.utils import (
+from internetnl_scan.utils import (
     query_yes_no,
     Credentials,
     make_cache_file_name,

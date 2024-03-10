@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from internetnl_be_scan.skeleton import fib
+from internetnl_scan.skeleton import fib
 
 __author__ = "Eelco van Vliet"
 __copyright__ = "Eelco van Vliet"

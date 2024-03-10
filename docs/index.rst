@@ -1,8 +1,8 @@
 ==================
-internetnl_be_scan
+internetnl_scan
 ==================
 
-This is the documentation of **internetnl_be_scan**.
+This is the documentation of **internetnl_scan**.
 
 .. note::
 

@@ -5,8 +5,8 @@ import sys
 
 import pandas as pd
 
-from internetnl_be_scan import __version__
-from internetnl_be_scan.internetnl_classes import InternetNlScanner
+from internetnl_scan import __version__
+from internetnl_scan.internetnl_classes import InternetNlScanner
 
 logging.basicConfig(format="%(asctime)s l%(lineno)-4s - %(levelname)-8s : %(message)s")
 _logger = logging.getLogger()
