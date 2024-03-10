@@ -48,6 +48,8 @@ MANIFEST
 
 # Per-project virtualenvs
 .venv*/
-!/src/internetnl_scan/internet_nl.sqlite
 src/internetnl_scan/cache/
 src/internetnl_scan/internet_nl.sqlite
+/venv/
+/tests/cache/
+.idea

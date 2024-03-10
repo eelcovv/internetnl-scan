@@ -7,7 +7,8 @@ import time
 from pathlib import Path
 
 import pandas as pd
-import requests
+from requests.exceptions import HTTPError
+from requests_kerberos_proxy.util import get_session
 from tabulate import tabulate
 from tqdm import trange
 
@@ -155,7 +156,8 @@ class InternetNlScanner(object):
         n_urls = len(self.urls_to_scan)
         _logger.info(f"Start request to scan {n_urls} URLS")
         if not self.dry_run:
-            response = requests.post(
+            session = get_session(self.api_url)
+            response = session.post(
                 f"{self.api_url}/requests",
                 json=post_parameters,
                 auth=self.scan_credentials.http_auth,
@@ -163,7 +165,7 @@ class InternetNlScanner(object):
 
             try:
                 response.raise_for_status()
-            except requests.exceptions.HTTPError as err:
+            except HTTPError as err:
                 _logger.warning(err)
                 self.scan_credentials.reset_credentials()
                 sys.exit(-1)
@@ -181,7 +183,8 @@ class InternetNlScanner(object):
 
     def check_status(self):
 
-        response = requests.get(
+        session = get_session(self.api_url)
+        response = session.get(
             f"{self.api_url}/requests/{self.scan_id}",
             auth=self.scan_credentials.http_auth,
         )
@@ -189,7 +192,7 @@ class InternetNlScanner(object):
 
         try:
             response.raise_for_status()
-        except requests.exceptions.HTTPError as err:
+        except HTTPError as err:
             _logger.warning(err)
         else:
 
@@ -244,7 +247,8 @@ class InternetNlScanner(object):
         """
         Get a list of all scans
         """
-        response = requests.get(
+        session = get_session(self.api_url)
+        response = session.get(
             f"{self.api_url}/requests", auth=self.scan_credentials.http_auth
         )
         if response.status_code != 200:
@@ -304,7 +308,8 @@ class InternetNlScanner(object):
                     cancel = query_yes_no("Continue canceling this scan ?") == "yes"
 
                 if cancel:
-                    response = requests.patch(
+                    session = get_session(self.api_url)
+                    response = session.patch(
                         f"{self.api_url}/requests/{scan_id}",
                         json=dict(status="cancelled"),
                         auth=self.scan_credentials.http_auth,
@@ -317,7 +322,8 @@ class InternetNlScanner(object):
 
     def get_results(self):
 
-        response = requests.get(
+        session = get_session(self.api_url)
+        response = session.get(
             f"{self.api_url}/requests/{self.scan_id}/results",
             auth=self.scan_credentials.http_auth,
         )
