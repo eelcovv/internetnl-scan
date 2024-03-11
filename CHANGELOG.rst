@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Version 1.3
+===========
+- Reorganised code
+
 Version 1.2
 ===========
 
