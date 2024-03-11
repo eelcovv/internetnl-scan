@@ -251,7 +251,7 @@ class InternetNlScanner(object):
         response = session.get(
             f"{self.api_url}/requests", auth=self.scan_credentials.http_auth
         )
-        if response.status_code != 200:
+        if not response.ok:
             _logger.warning(
                 "Failed logging in. Going to reset your credentials so that you can login again"
             )
