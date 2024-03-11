@@ -22,7 +22,7 @@ from internetnl_scan.utils import (
     remove_sub_domains,
 )
 
-_logger = logging.getLogger("internetnl_scan")
+_logger = logging.getLogger("InternetNLScan")
 
 
 class InternetNlScanner(object):
@@ -119,14 +119,14 @@ class InternetNlScanner(object):
                     _logger.info(
                         "\n\nThis list of scans is available. In order to do something "
                         "with a specific scan, run:\n\n"
-                        " >>> internetnl_scan --scan_id <request_id> [-option]\n\n"
+                        " >>> InternetNLScan --scan_id <request_id> [-option]\n\n"
                         "To see the available options run:\n\n"
-                        " >>> internetnl_scan --help"
+                        " >>> InternetNLScan --help"
                     )
                 else:
                     _logger.info(
                         "\n\nNo previous scans are available. To launch your first scan "
-                        "do:\n\n >>> internetnl_scan --domain www.example.com"
+                        "do:\n\n >>> InternetNLScan --domain www.example.com"
                     )
 
         if clear_all_scans:

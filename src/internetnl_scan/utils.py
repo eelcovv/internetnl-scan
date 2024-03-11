@@ -12,7 +12,7 @@ from requests.auth import HTTPBasicAuth
 from tldextract import tldextract
 from tqdm import tqdm
 
-_logger = logging.getLogger("internetnl_scan")
+_logger = logging.getLogger("InternetNLScan")
 
 
 class Credentials(object):

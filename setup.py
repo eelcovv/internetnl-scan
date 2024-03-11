@@ -1,5 +1,5 @@
 """
-    Setup file for internetnl_scan.
+    Setup file for InternetNLScan.
     Use setup.cfg to configure your project.
 
     This file was generated with PyScaffold 4.5.
