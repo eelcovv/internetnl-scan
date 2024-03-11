@@ -1,13 +1,12 @@
 import getpass
 import logging
-import sys
 import ssl
+import sys
 from pathlib import Path
 
 import keyring
 import pandas as pd
 import requests
-import requests_kerberos_proxy
 from requests.auth import HTTPBasicAuth
 from tldextract import tldextract
 from tqdm import tqdm

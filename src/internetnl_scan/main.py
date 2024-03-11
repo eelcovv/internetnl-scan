@@ -4,7 +4,6 @@ import os
 import sys
 
 import pandas as pd
-
 from internetnl_scan import __version__
 from internetnl_scan.internetnl_classes import InternetNlScanner
 

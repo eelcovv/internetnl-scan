@@ -7,11 +7,6 @@ import time
 from pathlib import Path
 
 import pandas as pd
-from requests.exceptions import HTTPError
-from requests_kerberos_proxy.util import get_session
-from tabulate import tabulate
-from tqdm import trange
-
 from internetnl_scan.utils import (
     query_yes_no,
     Credentials,
@@ -21,6 +16,10 @@ from internetnl_scan.utils import (
     convert_url_list,
     remove_sub_domains,
 )
+from requests.exceptions import HTTPError
+from requests_kerberos_proxy.util import get_session
+from tabulate import tabulate
+from tqdm import trange
 
 _logger = logging.getLogger("InternetNLScan")
 
