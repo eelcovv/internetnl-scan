@@ -87,7 +87,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = "InternetNLScan"
+project = "internetnl-scan"
 copyright = "2024, Eelco van Vliet"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -229,7 +229,7 @@ html_static_path = ["_static"]
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "InternetNLScan-doc"
+htmlhelp_basename = "internetnl-scan-doc"
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -246,7 +246,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ("index", "user_guide.tex", "InternetNLScan Documentation", "Eelco van Vliet", "manual")
+    ("index", "user_guide.tex", "internetnl-scan Documentation", "Eelco van Vliet", "manual")
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

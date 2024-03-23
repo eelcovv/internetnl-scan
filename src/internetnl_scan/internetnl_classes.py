@@ -21,7 +21,7 @@ from requests_kerberos_proxy.util import get_session
 from tabulate import tabulate
 from tqdm import trange
 
-_logger = logging.getLogger("InternetNLScan")
+_logger = logging.getLogger("internetnl-scan")
 
 
 class InternetNlScanner(object):
@@ -118,14 +118,14 @@ class InternetNlScanner(object):
                     _logger.info(
                         "\n\nThis list of scans is available. In order to do something "
                         "with a specific scan, run:\n\n"
-                        " >>> InternetNLScan --scan_id <request_id> [-option]\n\n"
+                        " >>> internetnl-scan --scan_id <request_id> [-option]\n\n"
                         "To see the available options run:\n\n"
-                        " >>> InternetNLScan --help"
+                        " >>> internetnl-scan --help"
                     )
                 else:
                     _logger.info(
                         "\n\nNo previous scans are available. To launch your first scan "
-                        "do:\n\n >>> InternetNLScan --domain www.example.com"
+                        "do:\n\n >>> internetnl-scan --domain www.example.com"
                     )
 
         if clear_all_scans:
