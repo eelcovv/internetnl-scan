@@ -51,5 +51,7 @@ MANIFEST
 src/internetnl_scan/cache/
 src/internetnl_scan/internet_nl.sqlite
 /venv/
-/tests/cache/
+/tests/cache/*
 .idea
+/cache/urls/*.json
+/cache/publicsuffix.org-tlds/*.tldextract.json
