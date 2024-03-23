@@ -2,7 +2,6 @@ importlib_metadata
 keyring
 pandas
 requests
-requests_kerberos_proxy
 setuptools
 sphinx
 tabulate
