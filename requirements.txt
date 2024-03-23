@@ -1,7 +1,6 @@
 importlib_metadata
 keyring
 pandas
-pytest
 requests
 requests_kerberos_proxy
 setuptools
