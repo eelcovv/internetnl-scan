@@ -270,7 +270,10 @@ class InternetNlScanner(object):
         """
         Get a list of all scans
         """
-        session = get_session(self.api_url)
+        if requests_kerberos_proxy is None:
+            session = requests.Session()
+        else:
+            session = get_session(self.api_url)
         response = session.get(
             f"{self.api_url}/requests", auth=self.scan_credentials.http_auth
         )
@@ -331,7 +334,10 @@ class InternetNlScanner(object):
                     cancel = query_yes_no("Continue canceling this scan ?") == "yes"
 
                 if cancel:
-                    session = get_session(self.api_url)
+                    if requests_kerberos_proxy is None:
+                        session = requests.Session()
+                    else:
+                        session = get_session(self.api_url)
                     response = session.patch(
                         f"{self.api_url}/requests/{scan_id}",
                         json=dict(status="cancelled"),
