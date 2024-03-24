@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import pytest
 from pathlib import Path
+
 from internetnl_scan.utils import (
     get_clean_url,
     convert_url_list,
