@@ -11,6 +11,23 @@ Description
 
 This utility can be used to submit and access your internet.nl scans
 
+Installation
+============
+
+Install the tool by::
+
+    pip install internetnl-scan
+
+In case you are behind a proxy which requires authentication you may want to install the packages
+*requests_kerberos_proxy*. You can install it yourself with::
+
+    pip install requests-kerberos-proxy
+
+or, alternatively, install the nutstools package as::
+
+    pip install internetnl-scan[proxy]
+
+which will automatically include the required proxy packages
 
 Note
 ====

@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 1.4
+===========
+- dropped mandatory dependency to *requests_kerberos_proxy*. Is only needed behind proxy servers
+- added pre-commit support
+- added readthedocs links
+
 Version 1.3
 ===========
 - Reorganised code
