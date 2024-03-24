@@ -6,6 +6,22 @@ import sys
 import time
 from pathlib import Path
 
+try:
+    import requests_kerberos_proxy
+except ImportError:
+    requests_kerberos_proxy = None
+else:
+    try:
+        from requests_kerberos_proxy.util import get_session
+    except ImportError as err:
+        raise ImportError(
+            "Module 'request_kerberos_proxy' was found but 'get_session' could not be imported"
+        )
+import requests
+from requests.exceptions import HTTPError
+from tabulate import tabulate
+from tqdm import trange
+
 import pandas as pd
 from internetnl_scan.utils import (
     query_yes_no,
@@ -16,10 +32,6 @@ from internetnl_scan.utils import (
     convert_url_list,
     remove_sub_domains,
 )
-from requests.exceptions import HTTPError
-from requests_kerberos_proxy.util import get_session
-from tabulate import tabulate
-from tqdm import trange
 
 _logger = logging.getLogger("internetnl-scan")
 
@@ -155,7 +167,11 @@ class InternetNlScanner(object):
         n_urls = len(self.urls_to_scan)
         _logger.info(f"Start request to scan {n_urls} URLS")
         if not self.dry_run:
-            session = get_session(self.api_url)
+            if requests_kerberos_proxy is not None:
+                session = get_session()
+            else:
+                _logger.debug("Trying to connection using plain requests")
+                session = requests.Session()
             response = session.post(
                 f"{self.api_url}/requests",
                 json=post_parameters,
@@ -164,8 +180,8 @@ class InternetNlScanner(object):
 
             try:
                 response.raise_for_status()
-            except HTTPError as err:
-                _logger.warning(err)
+            except HTTPError as http_err:
+                _logger.warning(http_err)
                 self.scan_credentials.reset_credentials()
                 sys.exit(-1)
 
@@ -181,8 +197,16 @@ class InternetNlScanner(object):
             _logger.info(f"In dry run mode. Not started")
 
     def check_status(self):
+        """
+        Check the status of the connection
+        """
 
-        session = get_session(self.api_url)
+        if requests_kerberos_proxy is not None:
+            session = get_session()
+        else:
+            _logger.debug("Trying to connection using plain requests")
+            session = requests.Session()
+
         response = session.get(
             f"{self.api_url}/requests/{self.scan_id}",
             auth=self.scan_credentials.http_auth,
@@ -191,8 +215,8 @@ class InternetNlScanner(object):
 
         try:
             response.raise_for_status()
-        except HTTPError as err:
-            _logger.warning(err)
+        except HTTPError as http_err:
+            _logger.warning(http_err)
         else:
 
             api_response = response.json()
@@ -320,8 +344,15 @@ class InternetNlScanner(object):
             _logger.info(f"Scan {scan_id} was not found")
 
     def get_results(self):
+        """
+        Download the results of the scan
+        """
 
-        session = get_session(self.api_url)
+        if requests_kerberos_proxy is not None:
+            session = get_session(self.api_url)
+        else:
+            session = requests.Session()
+
         response = session.get(
             f"{self.api_url}/requests/{self.scan_id}/results",
             auth=self.scan_credentials.http_auth,
