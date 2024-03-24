@@ -32,6 +32,14 @@ def parse_args(args):
         ),
     )
     parser.add_argument(
+        "-q",
+        "--quiet",
+        dest="loglevel",
+        help="set loglevel to WARNING",
+        action="store_const",
+        const=logging.WARNING,
+    )
+    parser.add_argument(
         "--verbose",
         dest="loglevel",
         help="set loglevel to INFO",
@@ -170,7 +178,11 @@ def main(argv):
             urls_to_scan.append(urls[0])
 
     if args.show_clean_urls:
-        print(urls_to_scan)
+        if urls_to_scan:
+            for url in urls_to_scan:
+                print(url)
+        else:
+            print("No urls found")
     else:
         InternetNlScanner(
             urls_to_scan=urls_to_scan,
