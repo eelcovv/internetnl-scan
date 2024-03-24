@@ -54,4 +54,5 @@ src/internetnl_scan/internet_nl.sqlite
 /tests/cache/*
 .idea
 /cache/urls/*.json
-/cache/publicsuffix.org-tlds/*.tldextract.json
+/cache/publicsuffix.org-tlds/*
+/cache/urls/*

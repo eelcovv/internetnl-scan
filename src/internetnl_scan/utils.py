@@ -206,6 +206,17 @@ def remove_sub_domains(urls_to_scan: list) -> list:
 
 
 def get_clean_url(url, cache_dir=None):
+    """
+    Turns an url into a clean url and adds it
+
+    Args:
+        url (str): url to clean
+        cache_dir (str): directory name in case the tld cached data needs to be read
+
+    Returns:
+        str, str: cleaned url, the suffix
+
+    """
     clean_url = url
     suffix = None
     if cache_dir is not None:
