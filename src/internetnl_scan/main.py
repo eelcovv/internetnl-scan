@@ -32,14 +32,6 @@ def parse_args(args):
         ),
     )
     parser.add_argument(
-        "-q",
-        "--quiet",
-        dest="loglevel",
-        help="set loglevel to WARNING",
-        action="store_const",
-        const=logging.WARNING,
-    )
-    parser.add_argument(
         "--verbose",
         dest="loglevel",
         help="set loglevel to INFO",
@@ -53,6 +45,14 @@ def parse_args(args):
         help="set loglevel to DEBUG",
         action="store_const",
         const=logging.DEBUG,
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        dest="loglevel",
+        help="set loglevel to WARNING",
+        action="store_const",
+        const=logging.WARNING,
     )
     parser.add_argument("--api_url", help="Api URL. If not given, default is taken")
     parser.add_argument(
