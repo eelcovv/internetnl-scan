@@ -4,9 +4,12 @@ import ssl
 import sys
 from pathlib import Path
 
+from urllib.parse import urlparse
+
 import keyring
 import pandas as pd
 import requests
+from urllib3.util import url
 
 try:
     import requests_kerberos_proxy
@@ -271,3 +274,71 @@ def get_clean_url(url, cache_dir=None):
                     suffix = tld.suffix.lower()
 
     return clean_url, suffix
+
+
+def validate_url(url_to_check: str) -> bool:
+    """
+    Test if a string is a valid url
+    Args:
+        url_to_check (str): Url to check if it is a valid url
+
+    Returns:
+        bool: True if url is valid
+    """
+    try:
+        result = urlparse(url_to_check)
+    except AttributeError:
+        return False
+    else:
+        return True
+
+
+def get_urls_from_domain_file(
+    domain_file: str,
+    url_column_key: str = None,
+    sep: str = ",",
+    column_number: int = 0,
+) -> list:
+    """
+    Get urls from a file name
+
+    Args:
+        domain_file (str): the file name to be read
+        url_column_key (str, optional): The name of the column containing the url values. Defaults to None, meaning
+        that the file does not have a header
+        sep (str, optional): The separator of the file
+        column_number (int, optional): The column number to read in case no header is given
+
+    Returns:
+        list: list of cleaned url's
+
+    """
+
+    _logger.info(f"Reading urls from {domain_file}")
+
+    if url_column_key is not None:
+        # if a key name is given, use that column
+        urls_df = pd.read_csv(domain_file, sep=sep)
+        # remove the white spaces from the column names
+        urls_df.columns = [col.strip() for col in urls_df.columns]
+        dirty_urls = urls_df[url_column_key].to_list()
+    else:
+        # read the file including the header and pick the first column
+        urls_df = pd.read_csv(domain_file, sep=sep, header=None)
+        dirty_urls = urls_df[column_number].to_list()
+
+    # remove leading white spaces and None line's
+    urls = []
+    for url_to_clean in dirty_urls:
+        try:
+            clean_url = url_to_clean.strip()
+        except AttributeError:
+            # remove all empty and non-valid URL's
+            _logger.debug(f"Skipping empty url {clean_url}")
+        else:
+            if validate_url(clean_url):
+                urls.append(clean_url)
+            else:
+                _logger.debug(f"Skipping invalid url {clean_url}")
+
+    return urls

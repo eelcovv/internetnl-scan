@@ -6,6 +6,7 @@ from internetnl_scan.utils import (
     convert_url_list,
     remove_sub_domains,
     remove_sub_domain,
+    get_urls_from_domain_file,
 )
 
 __author__ = "Eelco van Vliet"
@@ -45,3 +46,28 @@ def test_remove_subdomain_from_list():
     clean_urls = remove_sub_domains(urls)
 
     assert clean_urls == expected_urls
+
+
+def test_get_urls_from_domain_file():
+
+    expected_urls = [
+        "https://www.google.nl",
+        "https://www.example.org",
+        "www.example.org",
+    ]
+
+    example_file = "url_file_no_header_one_column.txt"
+    urls = get_urls_from_domain_file(example_file)
+    assert urls == expected_urls
+
+    example_file = "url_file_header_one_column.txt"
+    urls = get_urls_from_domain_file(example_file, url_column_key="domain_names")
+    assert urls == expected_urls
+
+    example_file = "url_file_header_two_column.txt"
+    urls = get_urls_from_domain_file(example_file, url_column_key="domain_names")
+    assert urls == expected_urls
+
+    example_file = "url_file_no_header_two_column.txt"
+    urls = get_urls_from_domain_file(example_file, column_number=1)
+    assert urls == expected_urls

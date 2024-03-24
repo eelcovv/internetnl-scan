@@ -15,10 +15,10 @@ def parse_args(args):
     """Parse command line parameters
 
     Args:
-      args ([str]): command line parameters as list of strings
+      args ([str]): command line parameters as a list of strings
 
     Returns:
-      :obj:`argparse.Namespace`: command line parameters namespace
+      obj:`argparse.Namespace`: command line parameters namespace
     """
     parser = argparse.ArgumentParser(
         description="Command line interface for Internet.nl API"
@@ -46,14 +46,24 @@ def parse_args(args):
         const=logging.DEBUG,
     )
     parser.add_argument("--api_url", help="Api URL. If not given, default is taken")
-    parser.add_argument("--domain_file", action="store")
+    parser.add_argument(
+        "--domain_file",
+        action="store",
+        help="Filename containing a list of domain names to scan. By default the first column is "
+        "taken as the domain name, however, this can be changed by the --url_column_key option",
+    )
     parser.add_argument(
         "--url_column_key",
         action="store",
-        default="url",
-        help="Name of the url column in the domain input file",
+        help="Name of the url column in the domain input file. Default to None, which implies that the file does nto "
+        "have a header and the first columns contains the domain names",
     )
-    parser.add_argument("--url", action="append", nargs="*")
+    parser.add_argument(
+        "--url",
+        action="append",
+        nargs="*",
+        help="Name of the url you want to scan. Can be given multiple times",
+    )
     parser.add_argument(
         "--output_filename",
         action="store",
@@ -75,7 +85,7 @@ def parse_args(args):
         "--n_id_chars",
         action="store",
         type=int,
-        help="Number of chararters to use of the ID for the export file",
+        help="Number of characters to use of the ID for the export file",
     )
     parser.add_argument(
         "--list_all_scans", action="store_true", help="Give a list of all scans"
