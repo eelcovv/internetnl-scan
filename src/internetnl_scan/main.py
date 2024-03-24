@@ -137,6 +137,12 @@ def parse_args(args):
         help="Do not submit the request, only show the actions",
     )
 
+    parser.add_argument(
+        "--show_clean_urls",
+        action="store_true",
+        help="Only read the parsed url file and write to stdout out and leave.",
+    )
+
     parsed_arguments = parser.parse_args(args)
 
     return parsed_arguments
@@ -163,22 +169,25 @@ def main(argv):
         for urls in args.url:
             urls_to_scan.append(urls[0])
 
-    InternetNlScanner(
-        urls_to_scan=urls_to_scan,
-        ignore_cache=args.ignore_cache,
-        output_filename=args.output_filename,
-        scan_id=args.scan_id,
-        scan_type=args.scan_type,
-        n_id_chars=args.n_id_chars,
-        get_results=args.get_results,
-        list_all_scans=args.list_all_scans,
-        cancel_scan=args.cancel_scan,
-        clear_all_scans=args.clear_all_scans,
-        export_results=args.export_to_sqlite,
-        wait_until_done=args.wait_until_done,
-        force_overwrite=args.force_overwrite,
-        dry_run=args.dry_run,
-    )
+    if args.show_clean_urls:
+        print(urls_to_scan)
+    else:
+        InternetNlScanner(
+            urls_to_scan=urls_to_scan,
+            ignore_cache=args.ignore_cache,
+            output_filename=args.output_filename,
+            scan_id=args.scan_id,
+            scan_type=args.scan_type,
+            n_id_chars=args.n_id_chars,
+            get_results=args.get_results,
+            list_all_scans=args.list_all_scans,
+            cancel_scan=args.cancel_scan,
+            clear_all_scans=args.clear_all_scans,
+            export_results=args.export_to_sqlite,
+            wait_until_done=args.wait_until_done,
+            force_overwrite=args.force_overwrite,
+            dry_run=args.dry_run,
+        )
 
 
 def run():
