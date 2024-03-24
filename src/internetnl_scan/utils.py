@@ -7,6 +7,18 @@ from pathlib import Path
 import keyring
 import pandas as pd
 import requests
+
+try:
+    import requests_kerberos_proxy
+except ImportError:
+    requests_kerberos_proxy = None
+else:
+    try:
+        from requests_kerberos_proxy.util import get_session
+    except ImportError as err:
+        raise ImportError(
+            "Module 'request_kerberos_proxy' was found but 'get_session' could not be imported"
+        )
 from requests.auth import HTTPBasicAuth
 from tldextract import tldextract
 from tqdm import tqdm
@@ -53,7 +65,7 @@ class Credentials(object):
 
 def response_to_dataframe(response):
     """
-    Convevrt the Internet.nl response to pandas dataframe
+    Convert the Internet.nl response to pandas dataframe
 
     Args:
         response: the returned response ot the Internet.nl API
@@ -70,8 +82,16 @@ def response_to_dataframe(response):
 
 
 def _flatten_dict(current_key, current_value, new_dict):
-    """gegeven de current key en value van een dict, zet de value als een string, of als een
-    dict maak een nieuwe key gebaseerd of the huidige key en dict key"""
+    """
+    Given the current key and value of a dict, set the value as a string or as a dict and create a new key based on
+    the current key and dict key
+
+    Args:
+        current_key (str): the current key string
+        current_value (str): the current key value
+        new_dict (dict): a new dictionary with the new keys which is modified in place
+    """
+
     if isinstance(current_value, dict):
         for key, value in current_value.items():
             new_key = "_".join([current_key, key])
@@ -90,7 +110,7 @@ def scan_result_to_dataframes(domains):
             keys are the urls, values are the nested json results
 
     Returns:
-        dict with 4 tables
+        dict with four tables
     """
     tables = dict()
     _logger.info("Converting the results to a dataframe")
@@ -167,7 +187,11 @@ def convert_url_list(urls_to_scan: list, scan_type="web"):
 
 def remove_sub_domain(url: str) -> str:
     """remove www or any other subdomain from the url"""
-    tld = tldextract.extract(url)
+    if requests_kerberos_proxy is None:
+        session = requests.Session()
+    else:
+        session = get_session()
+    tld = tldextract.extract(url, session=session)
     domain_and_suffix = ".".join([tld.domain, tld.suffix])
     return domain_and_suffix
 
@@ -182,20 +206,25 @@ def remove_sub_domains(urls_to_scan: list) -> list:
 
 
 def get_clean_url(url, cache_dir=None):
-
     clean_url = url
     suffix = None
     if cache_dir is not None:
         extract = tldextract.TLDExtract(cache_dir=cache_dir)
+        session = None
     else:
         extract = tldextract.extract
+        if requests_kerberos_proxy is None:
+            session = requests.Session()
+        else:
+            session = get_session()
+
     try:
         url = url.strip()
     except AttributeError:
         pass
     else:
         try:
-            tld = extract(url)
+            tld = extract(url, session=session)
         except TypeError:
             _logger.debug(f"Type error occurred for {url}")
         except ssl.SSLEOFError as ssl_err:
