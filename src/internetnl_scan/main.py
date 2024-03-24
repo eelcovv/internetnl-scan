@@ -6,6 +6,7 @@ import sys
 import pandas as pd
 from internetnl_scan import __version__
 from internetnl_scan.internetnl_classes import InternetNlScanner
+from internetnl_scan.utils import get_urls_from_domain_file
 
 logging.basicConfig(format="%(asctime)s l%(lineno)-4s - %(levelname)-8s : %(message)s")
 _logger = logging.getLogger()
@@ -57,6 +58,19 @@ def parse_args(args):
         action="store",
         help="Name of the url column in the domain input file. Default to None, which implies that the file does nto "
         "have a header and the first columns contains the domain names",
+    )
+    parser.add_argument(
+        "--column_number",
+        action="store",
+        type=int,
+        default=0,
+        help="Read this column number; used in case no header is present",
+    )
+    parser.add_argument(
+        "--separator",
+        action="store",
+        default=",",
+        help="Separator used for the url file. Defaults to ','",
     )
     parser.add_argument(
         "--url",
@@ -136,19 +150,14 @@ def main(argv):
 
     urls_to_scan = list()
     if args.domain_file is not None:
-        _logger.info(f"Reading urls from {args.domain_file}")
-        urls = pd.read_csv(args.domain_file)
-        urls.dropna(axis=0, inplace=True)
-        try:
-            urls_to_scan.extend(urls[args.url_column_key].tolist())
-        except KeyError as err:
-            _logger.warning(err)
-            _logger.warning(
-                f"Could not find column {args.url_column_key} in file "
-                f"{args.domain_file}.\nPlease specify the name of the url column in "
-                f"this file using the '--url_column_key' command line option"
-            )
-            sys.exit(-1)
+        new_urls = get_urls_from_domain_file(
+            domain_file=args.domain_file,
+            sep=args.separator,
+            url_column_key=args.url_column_key,
+            column_number=args.column_number,
+        )
+        if new_urls:
+            urls_to_scan.extend(new_urls)
 
     if args.url is not None:
         for urls in args.url:
