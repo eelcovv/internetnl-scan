@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
+from pathlib import Path
 from internetnl_scan.utils import (
     get_clean_url,
     convert_url_list,
@@ -12,6 +13,18 @@ from internetnl_scan.utils import (
 __author__ = "Eelco van Vliet"
 __copyright__ = "Eelco van Vliet"
 __license__ = "mit"
+
+
+def get_root_directory():
+    """small utility to get the root directory from which pytests is launched"""
+    current_directory = Path(".").cwd().name
+    if current_directory == "tests":
+        # we are inside the tests-directory. Move one up
+        root_directory = Path("..")
+    else:
+        # we are in the root directory
+        root_directory = Path(".")
+    return root_directory
 
 
 def test_clean_url():
@@ -50,24 +63,27 @@ def test_remove_subdomain_from_list():
 
 def test_get_urls_from_domain_file():
 
+    root = get_root_directory()
+    test_directory = root / Path("tests")
+
     expected_urls = [
         "https://www.google.nl",
         "https://www.example.org",
         "www.example.org",
     ]
 
-    example_file = "url_file_no_header_one_column.txt"
+    example_file = test_directory / Path("url_file_no_header_one_column.txt")
     urls = get_urls_from_domain_file(example_file)
     assert urls == expected_urls
 
-    example_file = "url_file_header_one_column.txt"
+    example_file = test_directory / Path("url_file_header_one_column.txt")
     urls = get_urls_from_domain_file(example_file, url_column_key="domain_names")
     assert urls == expected_urls
 
-    example_file = "url_file_header_two_column.txt"
+    example_file = test_directory / Path("url_file_header_two_column.txt")
     urls = get_urls_from_domain_file(example_file, url_column_key="domain_names")
     assert urls == expected_urls
 
-    example_file = "url_file_no_header_two_column.txt"
+    example_file = test_directory / Path("url_file_no_header_two_column.txt")
     urls = get_urls_from_domain_file(example_file, column_number=1)
     assert urls == expected_urls
