@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+The internetnl_scan main function with the command line parser
+"""
 import argparse
 import logging
 import os
 import sys
 
-import pandas as pd
 from internetnl_scan import __version__
 from internetnl_scan.internetnl_classes import InternetNlScanner
 from internetnl_scan.utils import get_urls_from_domain_file
@@ -157,6 +160,13 @@ def parse_args(args):
 
 
 def main(argv):
+    """
+    main function for internetnl-scan
+
+    Args:
+        argv (list): The raw command line arguments
+    """
+
     # parse the command line arguments
     args = parse_args(argv)
 
@@ -203,6 +213,9 @@ def main(argv):
 
 
 def run():
+    """
+    The run entry function
+    """
     main(sys.argv[1:])
 
 

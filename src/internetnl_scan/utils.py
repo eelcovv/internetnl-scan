@@ -1,15 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+Utilities for the internetnl tool
+"""
 import getpass
 import logging
 import ssl
 import sys
 from pathlib import Path
-
 from urllib.parse import urlparse
 
 import keyring
 import pandas as pd
 import requests
-from urllib3.util import url
 
 try:
     import requests_kerberos_proxy
@@ -178,7 +180,7 @@ def query_yes_no(question, default_answer="no"):
             sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
 
 
-def convert_url_list(urls_to_scan: list, scan_type="web"):
+def clean_list_of_urls(urls_to_scan: list):
     """cleans up the urls in a list"""
     new_url_list = list()
     for url in urls_to_scan:
@@ -239,12 +241,12 @@ def get_clean_url(url, cache_dir=None):
     else:
         try:
             tld = extract(url, session=session)
-        except TypeError:
-            _logger.debug(f"Type error occurred for {url}")
+        except TypeError as type_err:
+            _logger.debug(f"{type_err}Type error occurred for {url}")
         except ssl.SSLEOFError as ssl_err:
-            _logger.debug(f"SSLEOF error occurred for {url}")
+            _logger.debug(f"{ssl_err}\nSSLEOF error occurred for {url}")
         except requests.exceptions.SSLError as req_err:
-            _logger.debug(f"SSLError error occurred for {url}")
+            _logger.debug(f"{req_err}\nSSLError error occurred for {url}")
         else:
             if tld.subdomain == "" and tld.domain == "" and tld.suffix == "":
                 clean_url = None
@@ -290,11 +292,11 @@ def validate_url(url_to_check: str) -> bool:
     except AttributeError:
         return False
     else:
-        return True
+        return result
 
 
 def get_urls_from_domain_file(
-    domain_file: str,
+    domain_file: str | Path,
     url_column_key: str = None,
     sep: str = ",",
     column_number: int = 0,
@@ -334,7 +336,7 @@ def get_urls_from_domain_file(
             clean_url = url_to_clean.strip()
         except AttributeError:
             # remove all empty and non-valid URL's
-            _logger.debug(f"Skipping empty url {clean_url}")
+            _logger.debug(f"Skipping empty url")
         else:
             if validate_url(clean_url):
                 urls.append(clean_url)

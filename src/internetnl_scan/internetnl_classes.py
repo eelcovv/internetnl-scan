@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+Class definition for the internetnl_scan tool
+"""
 import glob
 import logging
 import pickle
@@ -29,7 +33,7 @@ from internetnl_scan.utils import (
     make_cache_file_name,
     response_to_dataframe,
     scan_result_to_dataframes,
-    convert_url_list,
+    clean_list_of_urls,
     remove_sub_domains,
 )
 
@@ -91,7 +95,7 @@ class InternetNlScanner(object):
 
         self.interval = interval
 
-        self.scans_df = None
+        self.scans_df: pd.DataFrame | None = None
 
         self.domains = dict()
         self.response = None
@@ -151,7 +155,7 @@ class InternetNlScanner(object):
         post a request to internet.nl to scan a list of urls
         """
 
-        urls_to_scan = convert_url_list(self.urls_to_scan, scan_type=self.scan_type)
+        urls_to_scan = clean_list_of_urls(self.urls_to_scan)
 
         if self.scan_type:
             # voor de email scan neem je alleen de domain name
@@ -246,6 +250,9 @@ class InternetNlScanner(object):
         _logger.info("Finished scanning")
 
     def read_from_cache(self):
+        """
+        Read the cached data of one of the previous runs
+        """
 
         cache_files = glob.glob(f"{self.cache_directory}/*_{self.scan_type}.pkl")
         if cache_files:
@@ -320,7 +327,7 @@ class InternetNlScanner(object):
         """
 
         self.get_all_scans()
-        mask = self.scans_df["request_id"] == scan_id
+        mask: pd.Series = self.scans_df["request_id"] == scan_id
         if any(mask):
             scan = self.scans_df[mask]
             if any(scan["status"] == "cancelled"):

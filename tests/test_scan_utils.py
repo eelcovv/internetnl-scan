@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+"""
+The unit tests for internetnl module utilities
+"""
 
 from pathlib import Path
 
 from internetnl_scan.utils import (
     get_clean_url,
-    convert_url_list,
+    clean_list_of_urls,
     remove_sub_domains,
     remove_sub_domain,
     get_urls_from_domain_file,
@@ -16,7 +19,7 @@ __license__ = "mit"
 
 
 def get_root_directory():
-    """small utility to get the root directory from which pytests is launched"""
+    """small utility to get the root directory from which pytest is launched"""
     current_directory = Path(".").cwd().name
     if current_directory == "tests":
         # we are inside the tests-directory. Move one up
@@ -42,7 +45,7 @@ def test_clean_url_with_cache():
 def test_clean_url_list():
     urls = ["www.example.org", "www.google.nl"]
 
-    clean_urls = convert_url_list(urls)
+    clean_urls = clean_list_of_urls(urls)
     assert clean_urls == urls
 
 

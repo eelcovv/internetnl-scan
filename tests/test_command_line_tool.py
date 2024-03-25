@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+The unit tests for the internetnl command line tool
+"""
 from pathlib import Path
 
 from internetnl_scan.main import main
@@ -8,7 +12,7 @@ __license__ = "MIT"
 
 
 def get_root_directory():
-    """small utility to get the root directory from which pytests is launched"""
+    """small utility to get the root directory from which pytest is launched"""
     current_directory = Path(".").cwd().name
     if current_directory == "tests":
         # we are inside the tests-directory. Move one up
@@ -19,8 +23,21 @@ def get_root_directory():
     return root_directory
 
 
-def check_output_with_expectation(output):
+def check_output_with_expectation(output: str):
+    """
+    Small function to test the output of all command line scripts with the expected url-list
 
+
+    Args:
+        output (str): the capsys output captured by the unit test
+
+    Returns:
+        bool: True if all the lines were correct
+
+    Raises:
+        AssertionError: in case one of the URL's does not correspond with the expected output
+
+    """
     expected_urls = [
         "https://www.google.nl",
         "https://www.example.org",
