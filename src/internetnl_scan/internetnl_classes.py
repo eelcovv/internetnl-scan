@@ -53,7 +53,7 @@ class InternetNlScanner(object):
         n_id_chars: int = None,
         scan_name: str = None,
         scan_type: str = "web",
-        api_url: str = "https://batch.internet.nl/api/batch/v2/",
+        api_url: str = "https://batch.internet.nl/api/batch/v2",
         interval: int = 30,
         cache_directory: str = "cache",
         ignore_cache: bool = True,

@@ -7,6 +7,7 @@ import logging
 import ssl
 import sys
 from pathlib import Path
+from typing import Union
 from urllib.parse import urlparse
 
 import keyring
@@ -296,7 +297,7 @@ def validate_url(url_to_check: str) -> bool:
 
 
 def get_urls_from_domain_file(
-    domain_file: str | Path,
+    domain_file: Union[str, Path],
     url_column_key: str = None,
     sep: str = ",",
     column_number: int = 0,
